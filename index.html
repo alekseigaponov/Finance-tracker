@@ -202,8 +202,23 @@ header{
 }
 .donut-center small{ font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); font-weight:400; display:block; }
 .donut-legend{ margin-top:14px; display:flex; flex-direction:column; gap:6px; }
-.dl-item{ display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted2); }
-.dl-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.dl-item{
+  display:flex; align-items:center; gap:8px; font-size:11px; color:var(--muted2);
+  padding:7px 8px; border-radius:10px; cursor:pointer; transition:all .18s;
+  border:1px solid transparent;
+}
+.dl-item:hover{ background:rgba(255,255,255,0.05); color:var(--text); border-color:var(--border); }
+.dl-item.active{ background:rgba(255,92,26,0.08); border-color:rgba(255,92,26,0.35); color:var(--text); }
+.dl-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.dl-amount{ font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
+.dl-pct{ font-family:'DM Mono',monospace; font-size:10px; color:var(--text); min-width:30px; text-align:right; }
+/* Cat detail overlay */
+.cat-detail-list{ display:flex; flex-direction:column; gap:3px; max-height:55vh; overflow-y:auto; }
+.cat-detail-item{ display:flex; align-items:center; gap:10px; padding:10px 8px; border-radius:10px; transition:background .15s; }
+.cat-detail-item:hover{ background:rgba(255,255,255,0.04); }
+.cat-detail-name{ flex:1; font-size:12px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cat-detail-date{ font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); flex-shrink:0; }
+.cat-detail-amt{ font-family:'Syne',sans-serif; font-size:13px; font-weight:800; color:var(--red); flex-shrink:0; }
 
 /* Budget card */
 .budget-card{ grid-column:span 8; padding:24px; }
@@ -259,22 +274,38 @@ header{
 
 /* Chart */
 .chart-card{ grid-column:span 12; padding:24px; }
-.chart-scroll{ overflow-x:auto; scrollbar-width:none; padding-bottom:4px; }
-.chart-scroll::-webkit-scrollbar{ display:none; }
-.chart-bars{ display:flex; align-items:flex-end; height:120px; gap:3px; }
-.bar-group{ display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:0; }
-.bar-pair{ display:flex; gap:1px; align-items:flex-end; height:100px; }
-.bar{
-  border-radius:4px 4px 0 0;
-  transition:opacity .2s;
-  min-height:3px;
-  cursor:pointer;
+.chart-toolbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+.chart-modes{ display:flex; gap:4px; }
+.chart-mode-btn{
+  font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.5px;
+  padding:5px 12px; border-radius:8px; border:1px solid var(--border);
+  background:transparent; color:var(--muted); cursor:pointer; transition:all .18s;
 }
-.bar:hover{ opacity:.75; }
-.bar-label{ font-family:'DM Mono',monospace; font-size:8px; color:var(--muted); margin-top:4px; }
-.chart-legend{ display:flex; gap:16px; margin-top:12px; }
+.chart-mode-btn.active{ border-color:var(--accent); color:var(--accent); background:rgba(255,92,26,0.08); }
+.chart-wrap{ position:relative; width:100%; }
+.chart-svg{ width:100%; overflow:visible; display:block; }
+.chart-tooltip{
+  position:absolute; pointer-events:none;
+  background:#0f0f18; border:1px solid var(--border2);
+  border-radius:10px; padding:10px 14px;
+  font-family:'DM Mono',monospace; font-size:11px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6);
+  opacity:0; transition:opacity .15s; z-index:10;
+  min-width:140px; white-space:nowrap;
+}
+.chart-tooltip.show{ opacity:1; }
+.tt-date{ font-size:10px; color:var(--muted); margin-bottom:6px; }
+.tt-row{ display:flex; justify-content:space-between; gap:12px; align-items:center; }
+.tt-dot{ width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.tt-label{ color:var(--muted); font-size:10px; }
+.tt-val{ font-weight:600; }
+.chart-legend{ display:flex; gap:16px; margin-top:12px; flex-wrap:wrap; }
 .legend-item{ display:flex; align-items:center; gap:6px; font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
 .legend-dot{ width:8px; height:8px; border-radius:2px; }
+.chart-summary{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+.cs-tile{ background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:10px 14px; }
+.cs-label{ font-family:'DM Mono',monospace; font-size:8px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+.cs-val{ font-family:'Syne',sans-serif; font-size:16px; font-weight:800; }
 
 /* Transactions section */
 .tx-card{ grid-column:span 12; padding:24px; }
@@ -514,8 +545,30 @@ header{
 
 <!-- Header -->
 <header>
-  <div class="logo">
-    FINANCE<span class="logo-dot">.</span>IO
+  <div class="logo" style="display:flex;align-items:center;gap:10px">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none" class="animated-logo" style="height:38px;width:auto">
+      <style>
+        @keyframes drawLine { to { stroke-dashoffset: 0; } }
+        @keyframes pulseGlow { 0%, 100% { opacity: 0.8; filter: blur(2px); } 50% { opacity: 1; filter: blur(5px); } }
+        .path-draw { stroke-dasharray: 100; stroke-dashoffset: 100; animation: drawLine 2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .dot-pulse { animation: pulseGlow 2s ease-in-out infinite; }
+      </style>
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#ff9f43;stop-opacity:1" />
+        </linearGradient>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
+      <path class="path-draw" d="M10 45V15H30M10 30H25" stroke="url(#grad)" stroke-width="4" stroke-linecap="round" />
+      <path class="path-draw" d="M35 45L45 25L55 35L65 10" stroke="url(#grad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation-delay: 0.5s;" />
+      <text x="75" y="42" fill="#e0e0e6" style="font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -1px;">
+        FINANCE<tspan class="dot-pulse" fill="#ff6b35" filter="url(#glow)">.</tspan>IO
+      </text>
+    </svg>
     <span class="logo-badge">BETA</span>
   </div>
   <div class="hbtns">
@@ -551,7 +604,10 @@ header{
       <svg id="donutSvg" width="140" height="140" viewBox="0 0 42 42">
         <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="rgba(255,255,255,0.06)" stroke-width="4.5"/>
       </svg>
-      <div class="donut-center"><span id="donutTotal">0</span><small>EUR</small></div>
+      <div class="donut-center" id="donutCenter">
+        <span id="donutTotal">0</span>
+        <small>EUR</small>
+      </div>
     </div>
     <div class="donut-legend" id="donutLegend"></div>
   </div>
@@ -580,14 +636,20 @@ header{
 
   <!-- Chart -->
   <div class="g chart-card">
-    <div class="card-title" id="chartTitle">По дням</div>
-    <div class="chart-scroll">
-      <div class="chart-bars" id="chartArea"></div>
+    <div class="chart-toolbar">
+      <div class="card-title" id="chartTitle" style="margin-bottom:0">По дням</div>
+      <div class="chart-modes">
+        <button class="chart-mode-btn active" id="cmBars" onclick="setChartMode('bars')">Столбцы</button>
+        <button class="chart-mode-btn" id="cmLine" onclick="setChartMode('line')">Баланс</button>
+        <button class="chart-mode-btn" id="cmExp" onclick="setChartMode('exp')">Расходы</button>
+      </div>
     </div>
-    <div class="chart-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Доходы</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Расходы</div>
+    <div class="chart-summary" id="chartSummary"></div>
+    <div class="chart-wrap">
+      <svg class="chart-svg" id="chartSvg" height="160"></svg>
+      <div class="chart-tooltip" id="chartTooltip"></div>
     </div>
+    <div class="chart-legend" id="chartLegend"></div>
   </div>
 
   <!-- Add section -->
@@ -719,6 +781,18 @@ header{
   <div class="modal-actions">
     <button class="m-cancel" onclick="closeOv('budgetOv')">Отмена</button>
     <button class="m-save" onclick="saveBudget()">СОХРАНИТЬ</button>
+  </div>
+</div>
+</div>
+
+<!-- ── Cat detail overlay ── -->
+<div class="overlay" id="catDetailOv">
+<div class="modal">
+  <div class="modal-title" id="catDetailTitle"></div>
+  <div id="catDetailSummary" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border);"></div>
+  <div class="cat-detail-list" id="catDetailList"></div>
+  <div class="modal-actions" style="margin-top:18px;">
+    <button class="m-cancel" style="width:100%" onclick="activeCat=null;renderDonut();closeOv('catDetailOv')">Закрыть</button>
   </div>
 </div>
 </div>
@@ -883,10 +957,10 @@ function refreshSelects(){
 // ── Overlays ──────────────────────────────────────────────────
 function openOv(id){document.getElementById(id).classList.add('open');}
 function closeOv(id){document.getElementById(id).classList.remove('open');}
-['addOv','editOv','deleteOv','newCatOv','budgetOv','importOv'].forEach(id=>{
+['addOv','editOv','deleteOv','newCatOv','budgetOv','importOv','catDetailOv'].forEach(id=>{
   document.getElementById(id).addEventListener('click',e=>{if(e.target===e.currentTarget)closeOv(id);});
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape')['addOv','editOv','deleteOv','newCatOv','budgetOv','importOv'].forEach(closeOv);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){['addOv','editOv','deleteOv','newCatOv','budgetOv','importOv','catDetailOv'].forEach(closeOv);activeCat=null;renderDonut();}});
 
 // ── Render: Months ────────────────────────────────────────────
 function renderMonths(){
@@ -910,16 +984,18 @@ function renderStats(){
 }
 
 // ── Render: Donut ─────────────────────────────────────────────
+let activeCat=null;
 function renderDonut(){
   const tx=getFiltered().filter(t=>t.amount<0);
   const totals={};
   tx.forEach(t=>totals[t.cat]=(totals[t.cat]||0)+Math.abs(t.amount));
   const total=Object.values(totals).reduce((a,b)=>a+b,0)||1;
-  document.getElementById('donutTotal').textContent=Math.round(total);
   const svg=document.getElementById('donutSvg');
   svg.querySelectorAll('.seg').forEach(n=>n.remove());
   let offset=0;
   const entries=Object.entries(totals).sort((a,b)=>b[1]-a[1]).slice(0,7);
+
+  // Draw segments
   entries.forEach(([cat,val])=>{
     const pct=(val/total)*100;
     const color=CAT_COLORS[cat]||'#636e72';
@@ -927,14 +1003,55 @@ function renderDonut(){
     c.setAttribute('class','seg');
     c.setAttribute('cx','21');c.setAttribute('cy','21');c.setAttribute('r','15.9');
     c.setAttribute('fill','transparent');c.setAttribute('stroke',color);
-    c.setAttribute('stroke-width','4.5');
+    c.setAttribute('stroke-width', activeCat===cat ? '6' : '4.5');
+    c.setAttribute('opacity', activeCat && activeCat!==cat ? '0.3' : '1');
     c.setAttribute('stroke-dasharray',`${pct} ${100-pct}`);
     c.setAttribute('stroke-dashoffset',-offset);
+    c.style.cursor='pointer';
+    c.style.transition='all .2s';
+    c.addEventListener('click',()=>openCatDetail(cat));
     svg.appendChild(c); offset+=pct;
   });
-  document.getElementById('donutLegend').innerHTML=entries.map(([cat,val])=>
-    `<div class="dl-item"><div class="dl-dot" style="background:${CAT_COLORS[cat]||'#636e72'}"></div>${CAT_ICONS[cat]||'📦'} ${cat}<span style="margin-left:auto;color:var(--text);font-family:'DM Mono',monospace;font-size:10px">${(val/total*100).toFixed(0)}%</span></div>`
-  ).join('');
+
+  // Center label
+  const center=document.getElementById('donutCenter');
+  if(activeCat && totals[activeCat]){
+    const aVal=totals[activeCat];
+    center.innerHTML=`<span style="font-size:14px;color:${CAT_COLORS[activeCat]||'#ff6b35'}">${CAT_ICONS[activeCat]||'📦'}</span><span style="font-size:15px">${aVal.toFixed(0)}</span><small>${(aVal/total*100).toFixed(0)}%</small>`;
+  } else {
+    center.innerHTML=`<span id="donutTotal">${Math.round(total)}</span><small>EUR</small>`;
+  }
+
+  // Legend
+  document.getElementById('donutLegend').innerHTML=entries.map(([cat,val])=>`
+    <div class="dl-item ${activeCat===cat?'active':''}" onclick="openCatDetail('${cat}')" data-cat="${cat}">
+      <div class="dl-dot" style="background:${CAT_COLORS[cat]||'#636e72'}"></div>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${CAT_ICONS[cat]||'📦'} ${cat}</span>
+      <span class="dl-amount">${val.toFixed(2)} €</span>
+      <span class="dl-pct">${(val/total*100).toFixed(0)}%</span>
+    </div>`).join('');
+}
+
+function openCatDetail(cat){
+  activeCat = activeCat===cat ? null : cat;
+  renderDonut();
+  if(!activeCat) return;
+  // Fill and open modal
+  const tx=getFiltered().filter(t=>t.amount<0&&t.cat===cat).sort((a,b)=>b.date.localeCompare(a.date));
+  const total=tx.reduce((a,t)=>a+Math.abs(t.amount),0);
+  const color=CAT_COLORS[cat]||'#636e72';
+  document.getElementById('catDetailTitle').innerHTML=
+    `${CAT_ICONS[cat]||'📦'} <span style="color:${color}">${cat}</span>`;
+  document.getElementById('catDetailSummary').innerHTML=
+    `<span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${tx.length} транзакций</span>
+     <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:${color}">${total.toFixed(2)} €</span>`;
+  document.getElementById('catDetailList').innerHTML=tx.map(t=>`
+    <div class="cat-detail-item">
+      <div class="cat-detail-name">${t.name}${t.pending?'<span style="font-size:9px;margin-left:5px">⏳</span>':''}</div>
+      <div class="cat-detail-date">${t.date.split('-').reverse().join('.')}</div>
+      <div class="cat-detail-amt">−${Math.abs(t.amount).toFixed(2)} €</div>
+    </div>`).join('') || '<div style="text-align:center;padding:20px;color:var(--muted)">Нет транзакций</div>';
+  openOv('catDetailOv');
 }
 
 // ── Render: Budgets ───────────────────────────────────────────
@@ -1038,26 +1155,197 @@ function renderForecast(){
 }
 
 // ── Render: Chart ─────────────────────────────────────────────
+let chartMode='bars';
+function setChartMode(m){
+  chartMode=m;
+  ['Bars','Line','Exp'].forEach(x=>document.getElementById('cm'+x).classList.toggle('active',m===x.toLowerCase()));
+  renderChart();
+}
+
 function renderChart(){
-  const tx=getFiltered();const days={};
-  tx.forEach(t=>{const d=t.date.split('-')[2];if(!days[d])days[d]={inc:0,exp:0};t.amount>0?days[d].inc+=t.amount:days[d].exp+=Math.abs(t.amount);});
+  const tx=getFiltered();
+  const days={};
+  tx.forEach(t=>{
+    const d=t.date.split('-')[2];
+    if(!days[d])days[d]={inc:0,exp:0,txs:[]};
+    t.amount>0?days[d].inc+=t.amount:days[d].exp+=Math.abs(t.amount);
+    days[d].txs.push(t);
+  });
   const keys=Object.keys(days).sort();
-  const maxV=Math.max(...keys.map(d=>Math.max(days[d].inc,days[d].exp)),1);
   const[y,mo]=(selectedMonth||'').split('-');
   document.getElementById('chartTitle').textContent=selectedMonth?`По дням — ${MONTHS[+mo-1]} ${y}`:'По дням';
-  const showL=keys.length<=22, bW=Math.max(6,Math.min(18,Math.floor(700/keys.length/2)-2));
-  document.getElementById('chartArea').innerHTML=
-    `<div style="display:flex;gap:${keys.length>20?2:5}px;align-items:flex-end;height:120px;min-width:${keys.length>20?keys.length*18:100}px;">`+
-    keys.map(d=>{
-      const iH=Math.round(days[d].inc/maxV*96),eH=Math.round(days[d].exp/maxV*96);
-      return`<div style="display:flex;flex-direction:column;align-items:center;gap:0;flex:${keys.length>15?'0 0 auto':'1'}">
-        <div style="display:flex;gap:1px;align-items:flex-end;height:100px">
-          <div title="+${days[d].inc.toFixed(2)}€" class="bar" style="width:${bW}px;height:${Math.max(iH,days[d].inc>0?3:0)}px;background:var(--green);"></div>
-          <div title="-${days[d].exp.toFixed(2)}€" class="bar" style="width:${bW}px;height:${Math.max(eH,days[d].exp>0?3:0)}px;background:var(--red);"></div>
-        </div>
-        ${showL?`<span class="bar-label">${d}</span>`:''}
-      </div>`;
-    }).join('')+'</div>';
+
+  const totalInc=keys.reduce((a,d)=>a+days[d].inc,0);
+  const totalExp=keys.reduce((a,d)=>a+days[d].exp,0);
+  const avgExp=keys.length?totalExp/keys.length:0;
+  const bestDay=keys.reduce((best,d)=>days[d].inc-days[d].exp>days[best]?.inc-days[best]?.exp?d:best, keys[0]);
+
+  document.getElementById('chartSummary').innerHTML=`
+    <div class="cs-tile"><div class="cs-label">Итого доходы</div><div class="cs-val" style="color:var(--green)">+${totalInc.toFixed(0)} €</div></div>
+    <div class="cs-tile"><div class="cs-label">Итого расходы</div><div class="cs-val" style="color:var(--red)">−${totalExp.toFixed(0)} €</div></div>
+    <div class="cs-tile"><div class="cs-label">Расходы / день</div><div class="cs-val" style="color:var(--accent)">${avgExp.toFixed(0)} €</div></div>`;
+
+  const svg=document.getElementById('chartSvg');
+  const tooltip=document.getElementById('chartTooltip');
+  const W=svg.parentElement.offsetWidth||600;
+  const H=140, PAD={l:8,r:8,t:10,b:24};
+  const gW=W-PAD.l-PAD.r, gH=H-PAD.t-PAD.b;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.setAttribute('height',H);
+
+  if(!keys.length){svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="rgba(255,255,255,0.2)" font-size="12">Нет данных</text>';return;}
+
+  const n=keys.length;
+  const slotW=gW/n;
+
+  if(chartMode==='bars'){
+    const maxV=Math.max(...keys.map(d=>Math.max(days[d].inc,days[d].exp)),1);
+    const bW=Math.max(3,Math.min(20,slotW/2-2));
+    let html=`<defs>
+      <linearGradient id="gInc" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#22d98a" stop-opacity=".9"/><stop offset="100%" stop-color="#22d98a" stop-opacity=".3"/></linearGradient>
+      <linearGradient id="gExp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff3b5c" stop-opacity=".9"/><stop offset="100%" stop-color="#ff3b5c" stop-opacity=".3"/></linearGradient>
+    </defs>`;
+    // Grid lines
+    for(let i=0;i<=4;i++){
+      const yy=PAD.t+gH*(i/4);
+      const val=(maxV*(1-i/4)).toFixed(0);
+      html+=`<line x1="${PAD.l}" y1="${yy.toFixed(1)}" x2="${W-PAD.r}" y2="${yy.toFixed(1)}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+      if(i<4)html+=`<text x="${PAD.l}" y="${(yy+9).toFixed(1)}" fill="rgba(255,255,255,0.2)" font-size="7" font-family="DM Mono,monospace">${val}</text>`;
+    }
+    // Bars
+    keys.forEach((d,i)=>{
+      const x=PAD.l+i*slotW+slotW/2;
+      const iH=Math.max(days[d].inc/maxV*gH,days[d].inc>0?2:0);
+      const eH=Math.max(days[d].exp/maxV*gH,days[d].exp>0?2:0);
+      const showLabel=n<=20;
+      html+=`
+        <rect class="chart-bar-el" x="${(x-bW-1).toFixed(1)}" y="${(PAD.t+gH-iH).toFixed(1)}" width="${bW}" height="${Math.max(iH,0).toFixed(1)}" rx="3" fill="url(#gInc)" data-idx="${i}" style="cursor:pointer;transition:opacity .15s"/>
+        <rect class="chart-bar-el" x="${(x+1).toFixed(1)}" y="${(PAD.t+gH-eH).toFixed(1)}" width="${bW}" height="${Math.max(eH,0).toFixed(1)}" rx="3" fill="url(#gExp)" data-idx="${i}" style="cursor:pointer;transition:opacity .15s"/>
+        ${showLabel?`<text x="${x.toFixed(1)}" y="${(H-6).toFixed(1)}" fill="rgba(255,255,255,0.3)" font-size="8" font-family="DM Mono,monospace" text-anchor="middle">${d}</text>`:''}
+        <rect class="chart-hit" x="${(PAD.l+i*slotW).toFixed(1)}" y="${PAD.t}" width="${slotW.toFixed(1)}" height="${gH}" fill="transparent" data-idx="${i}" style="cursor:pointer"/>`;
+    });
+    svg.innerHTML=html;
+    document.getElementById('chartLegend').innerHTML=`
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Доходы</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Расходы</div>`;
+
+  } else if(chartMode==='line'){
+    // Cumulative balance line
+    let running=0;
+    const points=keys.map(d=>{running+=days[d].inc-days[d].exp;return running;});
+    const minP=Math.min(...points,0), maxP=Math.max(...points,1);
+    const range=maxP-minP||1;
+    const toY=v=>PAD.t+gH-(((v-minP)/range)*gH);
+    const toX=(i)=>PAD.l+i*slotW+slotW/2;
+    const pts=keys.map((_,i)=>`${toX(i).toFixed(1)},${toY(points[i]).toFixed(1)}`).join(' ');
+    const zeroY=toY(0).toFixed(1);
+    // Area fill path
+    const areaPath=`M${toX(0).toFixed(1)},${zeroY} `+keys.map((_,i)=>`L${toX(i).toFixed(1)},${toY(points[i]).toFixed(1)}`).join(' ')+` L${toX(n-1).toFixed(1)},${zeroY} Z`;
+    let html=`<defs>
+      <linearGradient id="gBal" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ff5c1a" stop-opacity=".3"/>
+        <stop offset="100%" stop-color="#ff5c1a" stop-opacity="0"/>
+      </linearGradient>
+    </defs>`;
+    // Grid
+    for(let i=0;i<=4;i++){
+      const yy=PAD.t+gH*(i/4);
+      const val=(minP+range*(1-i/4)).toFixed(0);
+      html+=`<line x1="${PAD.l}" y1="${yy.toFixed(1)}" x2="${W-PAD.r}" y2="${yy.toFixed(1)}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+      html+=`<text x="${PAD.l}" y="${(yy+9).toFixed(1)}" fill="rgba(255,255,255,0.2)" font-size="7" font-family="DM Mono,monospace">${parseInt(val)>0?'+':''  }${val}</text>`;
+    }
+    // Zero line
+    if(minP<0&&maxP>0) html+=`<line x1="${PAD.l}" y1="${zeroY}" x2="${W-PAD.r}" y2="${zeroY}" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="4,3"/>`;
+    html+=`<path d="${areaPath}" fill="url(#gBal)"/>`;
+    html+=`<polyline points="${pts}" fill="none" stroke="#ff5c1a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    // Dots + labels
+    const showLabel=n<=20;
+    keys.forEach((_,i)=>{
+      const cx=toX(i).toFixed(1), cy=toY(points[i]).toFixed(1);
+      const isPos=points[i]>=0;
+      html+=`<circle cx="${cx}" cy="${cy}" r="3.5" fill="${isPos?'#ff5c1a':'#ff3b5c'}" stroke="#060608" stroke-width="1.5" class="chart-dot" data-idx="${i}" style="cursor:pointer"/>`;
+      if(showLabel) html+=`<text x="${cx}" y="${(H-6)}" fill="rgba(255,255,255,0.3)" font-size="8" font-family="DM Mono,monospace" text-anchor="middle">${keys[i]}</text>`;
+      html+=`<rect class="chart-hit" x="${(PAD.l+i*slotW).toFixed(1)}" y="${PAD.t}" width="${slotW.toFixed(1)}" height="${gH}" fill="transparent" data-idx="${i}" style="cursor:pointer"/>`;
+    });
+    svg.innerHTML=html;
+    document.getElementById('chartLegend').innerHTML=`<div class="legend-item"><div class="legend-dot" style="background:var(--accent);border-radius:50%"></div>Накопительный баланс</div>`;
+
+  } else { // exp — expenses by category stacked
+    const catTotals={};
+    keys.forEach(d=>{ Object.entries(days[d].txs.filter(t=>t.amount<0).reduce((a,t)=>{a[t.cat]=(a[t.cat]||0)+Math.abs(t.amount);return a;},{})).forEach(([c,v])=>catTotals[c]=(catTotals[c]||0)+v); });
+    const cats=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([c])=>c);
+    const maxV=Math.max(...keys.map(d=>cats.reduce((s,c)=>s+(days[d].txs.filter(t=>t.amount<0&&t.cat===c).reduce((a,t)=>a+Math.abs(t.amount),0)),0)),1);
+    const bW=Math.max(4,Math.min(28,slotW-4));
+    let html=`<defs>${cats.map((c,ci)=>`<linearGradient id="gc${ci}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${CAT_COLORS[c]||'#636e72'}" stop-opacity=".9"/><stop offset="100%" stop-color="${CAT_COLORS[c]||'#636e72'}" stop-opacity=".4"/></linearGradient>`).join('')}</defs>`;
+    for(let i=0;i<=4;i++){
+      const yy=PAD.t+gH*(i/4);
+      html+=`<line x1="${PAD.l}" y1="${yy.toFixed(1)}" x2="${W-PAD.r}" y2="${yy.toFixed(1)}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+    }
+    const showLabel=n<=20;
+    keys.forEach((d,i)=>{
+      const x=PAD.l+i*slotW+slotW/2;
+      let stackY=PAD.t+gH;
+      cats.forEach((c,ci)=>{
+        const v=days[d].txs.filter(t=>t.amount<0&&t.cat===c).reduce((a,t)=>a+Math.abs(t.amount),0);
+        if(!v)return;
+        const h=Math.max(v/maxV*gH,2);
+        stackY-=h;
+        html+=`<rect x="${(x-bW/2).toFixed(1)}" y="${stackY.toFixed(1)}" width="${bW}" height="${h.toFixed(1)}" rx="2" fill="url(#gc${ci})" data-idx="${i}" style="cursor:pointer"/>`;
+      });
+      if(showLabel) html+=`<text x="${x.toFixed(1)}" y="${(H-6)}" fill="rgba(255,255,255,0.3)" font-size="8" font-family="DM Mono,monospace" text-anchor="middle">${d}</text>`;
+      html+=`<rect class="chart-hit" x="${(PAD.l+i*slotW).toFixed(1)}" y="${PAD.t}" width="${slotW.toFixed(1)}" height="${gH}" fill="transparent" data-idx="${i}" style="cursor:pointer"/>`;
+    });
+    svg.innerHTML=html;
+    document.getElementById('chartLegend').innerHTML=cats.map(c=>`<div class="legend-item"><div class="legend-dot" style="background:${CAT_COLORS[c]||'#636e72'}"></div>${CAT_ICONS[c]||'📦'} ${c}</div>`).join('');
+  }
+
+  // Tooltip logic — shared for all modes
+  let running2=0;
+  const cumulBal=keys.map(d=>{running2+=days[d].inc-days[d].exp;return running2;});
+
+  svg.querySelectorAll('.chart-hit, .chart-dot').forEach(el=>{
+    el.addEventListener('mouseenter',function(e){
+      const i=parseInt(this.getAttribute('data-idx'));
+      const d=keys[i]; if(!d)return;
+      const bal=cumulBal[i];
+      let rows='';
+      if(chartMode==='bars'||chartMode==='exp'){
+        if(days[d].inc>0) rows+=`<div class="tt-row"><span class="tt-dot" style="background:var(--green)"></span><span class="tt-label">Доход</span><span class="tt-val" style="color:var(--green)">+${days[d].inc.toFixed(2)} €</span></div>`;
+        if(days[d].exp>0) rows+=`<div class="tt-row"><span class="tt-dot" style="background:var(--red)"></span><span class="tt-label">Расход</span><span class="tt-val" style="color:var(--red)">−${days[d].exp.toFixed(2)} €</span></div>`;
+        const dayBal=days[d].inc-days[d].exp;
+        rows+=`<div class="tt-row" style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.08)"><span class="tt-label">День</span><span class="tt-val" style="color:${dayBal>=0?'var(--green)':'var(--red)'}">${dayBal>=0?'+':''}${dayBal.toFixed(2)} €</span></div>`;
+        if(chartMode==='exp'){
+          const catBreak=days[d].txs.filter(t=>t.amount<0).reduce((a,t)=>{a[t.cat]=(a[t.cat]||0)+Math.abs(t.amount);return a;},{});
+          Object.entries(catBreak).sort((a,b)=>b[1]-a[1]).slice(0,4).forEach(([c,v])=>{
+            rows+=`<div class="tt-row"><span class="tt-dot" style="background:${CAT_COLORS[c]||'#636e72'}"></span><span class="tt-label">${CAT_ICONS[c]||''} ${c}</span><span class="tt-val">−${v.toFixed(2)} €</span></div>`;
+          });
+        }
+      } else {
+        rows+=`<div class="tt-row"><span class="tt-dot" style="background:var(--accent)"></span><span class="tt-label">Баланс</span><span class="tt-val" style="color:${bal>=0?'var(--green)':'var(--red)'}">${bal>=0?'+':''}${bal.toFixed(2)} €</span></div>`;
+        rows+=`<div class="tt-row"><span class="tt-dot" style="background:var(--green)"></span><span class="tt-label">День +</span><span class="tt-val" style="color:var(--green)">+${days[d].inc.toFixed(2)} €</span></div>`;
+        rows+=`<div class="tt-row"><span class="tt-dot" style="background:var(--red)"></span><span class="tt-label">День −</span><span class="tt-val" style="color:var(--red)">−${days[d].exp.toFixed(2)} €</span></div>`;
+      }
+      const [yy,mm,dd_]=(selectedMonth||new Date().toISOString().slice(0,7)).split('-');
+      tooltip.innerHTML=`<div class="tt-date">${d} ${MONTHS[(parseInt(mm)||3)-1]}</div>${rows}`;
+      tooltip.classList.add('show');
+      // Position
+      const rect=svg.getBoundingClientRect();
+      const wrap=svg.parentElement.getBoundingClientRect();
+      const tx2=e.clientX-wrap.left;
+      const ty2=e.clientY-wrap.top;
+      const tW=160, tH=130;
+      tooltip.style.left=(tx2+tW+10<wrap.width?tx2+12:tx2-tW-12)+'px';
+      tooltip.style.top=Math.max(0,ty2-40)+'px';
+    });
+    el.addEventListener('mousemove',function(e){
+      const wrap=svg.parentElement.getBoundingClientRect();
+      const tx2=e.clientX-wrap.left, ty2=e.clientY-wrap.top;
+      const tW=170;
+      tooltip.style.left=(tx2+tW+10<wrap.width?tx2+12:tx2-tW-12)+'px';
+      tooltip.style.top=Math.max(0,ty2-40)+'px';
+    });
+    el.addEventListener('mouseleave',()=>tooltip.classList.remove('show'));
+  });
 }
 
 // ── Render: Filters & Tx ──────────────────────────────────────
