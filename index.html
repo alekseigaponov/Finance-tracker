@@ -837,17 +837,17 @@ const DEMO=[
 ].map(t=>({...t,cat:guessCategory(t.name)}));
 
 // ── Storage ───────────────────────────────────────────────────
-async function saveData(){
+function saveData(){
   try{
-    await window.storage.set(KEY,JSON.stringify({transactions,nextId,budgets,CAT_ICONS,CAT_COLORS}));
+    localStorage.setItem(KEY,JSON.stringify({transactions,nextId,budgets,CAT_ICONS,CAT_COLORS}));
     showStatus('✓ Сохранено','var(--muted)');
   }catch(e){}
 }
-async function loadData(){
+function loadData(){
   try{
-    const r=await window.storage.get(KEY);
-    if(r?.value){
-      const p=JSON.parse(r.value);
+    const raw=localStorage.getItem(KEY); const r={value:raw};
+    if(raw){
+      const p=JSON.parse(raw);
       if(p.transactions?.length){transactions=p.transactions;nextId=p.nextId||transactions.length+1;}
       if(p.budgets) budgets=p.budgets;
       if(p.CAT_ICONS) CAT_ICONS={...CAT_ICONS,...p.CAT_ICONS};
@@ -1333,7 +1333,7 @@ document.getElementById('txDate').value=new Date().toISOString().split('T')[0];
 document.getElementById('moTxDate').value=new Date().toISOString().split('T')[0];
 
 (async()=>{
-  const loaded=await loadData();
+  const loaded=loadData();
   if(!loaded){transactions=[...DEMO];nextId=DEMO.length+1;}
   showStatus(loaded?'✓ Данные загружены':'📋 Демо-данные',loaded?'var(--green)':'var(--muted)');
   refreshSelects();
