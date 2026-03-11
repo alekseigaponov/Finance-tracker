@@ -3,516 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FINANCE.IO // 2026</title>
+    <title>FINANCE.IO // 2026 PRO FIX</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Unbounded:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* Стили из твоего промпта: темная тема, шрифты и Bento-сетка */
         :root {
-            --bg: #0a0a0f;
-            --card: #16161f;
-            --border: #1e1e2e;
-            --accent: #ff6b35;
-            --green: #00d68f;
-            --red: #ff4757;
-            --text: #e0e0e6;
-            --muted: #808090;
-            --font-main: 'Space Mono', monospace;
-            --font-title: 'Unbounded', cursive;
+            --bg: #0a0a0f; --card: #16161f; --border: #1e1e2e;
+            --accent: #ff6b35; --green: #00d68f; --red: #ff4757;
+            --text: #e0e0e6; --muted: #808090;
+            --font-main: 'Space Mono', monospace; --font-title: 'Unbounded', cursive;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-        
-        body {
-            background-color: var(--bg);
-            background-image: linear-gradient(rgba(255,107,53,0.03) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255,107,53,0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            color: var(--text);
-            font-family: var(--font-main);
-            padding: 20px;
-            line-height: 1.5;
-        }
-
+        body { background: var(--bg); color: var(--text); font-family: var(--font-main); padding: 20px; line-height: 1.5; }
         .container { max-width: 1100px; margin: 0 auto; }
-        h1, h2, h3, .amount { font-family: var(--font-title); text-transform: uppercase; }
-
-        /* Header */
-        header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 30px;
-        }
-        .logo { font-size: 24px; font-weight: 700; letter-spacing: -1px; }
-        .logo span { color: var(--accent); }
-        .badge { background: rgba(255,107,53,0.1); color: var(--accent); padding: 4px 12px; border-radius: 20px; font-size: 10px; border: 1px solid var(--accent); }
-
-        /* Buttons */
-        .btn {
-            background: var(--card); border: 1px solid var(--border); color: var(--text);
-            padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.3s;
-            font-family: var(--font-main); font-size: 12px; text-transform: uppercase;
-        }
-        .btn:hover { border-color: var(--accent); box-shadow: 0 0 15px rgba(255,107,53,0.2); }
-        .btn-primary { background: var(--accent); border: none; font-weight: bold; color: white; }
-
-        /* Grid & Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; position: relative; transition: 0.3s; }
-        .card:hover { border-color: var(--accent); }
-        .card::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; border-radius: 12px 12px 0 0; }
-        .card.inc::after { background: var(--green); }
-        .card.exp::after { background: var(--red); }
-        .card.bal::after { background: var(--accent); }
-
-        /* Monthly Filter */
-        .month-filter { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 30px; scrollbar-width: none; }
-        .pill { background: var(--card); border: 1px solid var(--border); padding: 8px 16px; border-radius: 30px; cursor: pointer; white-space: nowrap; font-size: 13px; }
-        .pill.active { background: var(--accent); border-color: var(--accent); color: white; }
-
-        /* Chart */
-        .chart-box { height: 250px; display: flex; align-items: flex-end; gap: 4px; padding: 20px 0; border-bottom: 1px solid var(--border); overflow-x: auto; }
-        .bar-group { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; min-width: 12px; height: 100%; }
-        .bar { width: 100%; border-radius: 2px 2px 0 0; }
-        .bar.green { background: var(--green); opacity: 0.7; }
-        .bar.red { background: var(--red); opacity: 0.7; }
-
-        /* Forecast */
-        .forecast-box { margin-bottom: 30px; border: 1px dashed var(--accent); background: rgba(255,107,53,0.02); }
-        .prog-wrap { height: 12px; background: #252535; border-radius: 6px; margin: 15px 0; position: relative; overflow: hidden; }
-        .prog-fact { height: 100%; background: var(--accent); position: absolute; z-index: 2; }
-        .prog-fore { height: 100%; background: var(--accent); opacity: 0.3; position: absolute; z-index: 1; }
-        .prog-today { position: absolute; top: 0; width: 2px; height: 100%; background: white; z-index: 3; box-shadow: 0 0 5px white; }
-
-        /* Lists */
-        .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
-        .tx-row { display: grid; grid-template-columns: 40px 1fr 120px 140px 100px 80px; align-items: center; padding: 14px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; }
-        .progress-bar { height: 4px; background: #252535; border-radius: 2px; margin-top: 6px; }
-        .progress-fill { height: 100%; border-radius: 2px; }
-
-        /* Modals */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: flex-end; justify-content: center; z-index: 100; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 30px; }
+        .btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 12px; cursor: pointer; font-size: 12px; transition: 0.3s; }
+        .btn:hover { border-color: var(--accent); }
+        .btn-primary { background: var(--accent); color: #000; font-weight: bold; border: none; }
+        
+        /* Modal Styles */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: none; align-items: flex-end; justify-content: center; z-index: 1000; }
         .modal.active { display: flex; }
-        .modal-content { background: var(--card); width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; padding: 30px; transform: translateY(100%); transition: 0.4s; }
+        .modal-content { background: var(--card); width: 100%; max-width: 500px; padding: 30px; border-radius: 32px 32px 0 0; border: 1px solid var(--border); transform: translateY(100%); transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
         .modal.active .modal-content { transform: translateY(0); }
-
-        input, select { background: #1e1e2e; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-main); }
-        label { font-size: 11px; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; display: block; }
-
-        @media (max-width: 768px) { .stats-grid, .two-cols { grid-template-columns: 1fr; } .tx-row { grid-template-columns: 40px 1fr 100px; } .tx-cat, .tx-actions, .tx-date { display: none; } }
+        
+        .tab-nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .tab-link { cursor: pointer; color: var(--muted); font-size: 12px; text-transform: uppercase; }
+        .tab-link.active { color: var(--accent); font-weight: bold; }
+        
+        .drop-zone { border: 2px dashed var(--border); border-radius: 16px; padding: 40px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .drop-zone:hover { border-color: var(--accent); background: rgba(255,107,53,0.05); }
+        input[type="checkbox"] { margin-right: 8px; vertical-align: middle; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <div class="logo">FINANCE<span>.</span>IO</div>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <span id="save-status" style="font-size: 10px; color: var(--muted);">✓ Сохранено</span>
-            <div class="badge">ACC #2026-X88</div>
-            <button class="btn" onclick="exportJSON()">↑ JSON</button>
-            <button class="btn" onclick="openModal('importModal')">↓ Импорт</button>
+        <div style="font-family: var(--font-title); font-size: 20px;">FINANCE<span>.</span>IO</div>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn" onclick="exportData()">↑ JSON</button>
+            <button class="btn btn-primary" onclick="openModal('importModal')">↓ Импорт</button>
         </div>
     </header>
 
-    <div id="month-filter" class="month-filter"></div>
-
-    <div class="stats-grid">
-        <div class="card inc">
-            <label>Доходы</label>
-            <div class="amount" id="stat-inc" style="font-size: 24px; color: var(--green);">0.00 €</div>
-        </div>
-        <div class="card exp">
-            <label>Расходы</label>
-            <div class="amount" id="stat-exp" style="font-size: 24px; color: var(--red);">0.00 €</div>
-        </div>
-        <div class="card bal">
-            <label>Баланс</label>
-            <div class="amount" id="stat-bal" style="font-size: 24px; color: var(--accent);">0.00 €</div>
-        </div>
+    <div id="main-content">
+        <h2 style="font-family: var(--font-title); opacity: 0.5;">Дашборд готов к работе</h2>
     </div>
-
-    <div class="card" style="margin-bottom: 30px;">
-        <h3 id="chart-title" style="font-size: 14px; margin-bottom: 10px;">Март 2026</h3>
-        <div id="daily-chart" class="chart-box"></div>
-    </div>
-
-    <div id="period-stats" style="display: none; margin-bottom: 30px;">
-        <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
-            <div class="card" style="text-align: center;"><div id="p-count" class="amount">0</div><label>Операций</label></div>
-            <div class="card" style="text-align: center;"><div id="p-avg" class="amount">0 €</div><label>Ср. расход</label></div>
-            <div class="card" style="text-align: center;"><div id="p-save" class="amount">0%</div><label>Сбережения</label></div>
-            <div class="card" style="text-align: center;"><div id="p-top" class="amount" style="font-size: 12px;">-</div><label>Топ категория</label></div>
-        </div>
-        <p id="p-compare" style="font-size: 11px; text-align: center; margin-top: -15px; color: var(--muted);"></p>
-    </div>
-
-    <div id="forecast-section" class="card forecast-box" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3>Прогноз на конец месяца</h3>
-            <span id="f-status" class="badge">---</span>
-        </div>
-        <div class="prog-wrap">
-            <div id="f-fact" class="prog-fact"></div>
-            <div id="f-fore" class="prog-fore"></div>
-            <div id="f-today" class="prog-today"></div>
-        </div>
-        <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 0;">
-            <div style="text-align: center;"><div id="f-daily" class="amount">0 €</div><label>Расход в день</label></div>
-            <div style="text-align: center;"><div id="f-left" class="amount">0</div><label>Дней осталось</label></div>
-            <div style="text-align: center;"><div id="f-total" class="amount">0 €</div><label>Итог</label></div>
-        </div>
-    </div>
-
-    <div class="two-cols">
-        <div class="card"><h3>Топ расходов</h3><div id="top-cats" style="margin-top: 15px;"></div></div>
-        <div class="card"><h3>Топ магазинов</h3><div id="top-shops" style="margin-top: 15px;"></div></div>
-    </div>
-
-    <div class="card" style="margin-bottom: 30px;">
-        <h3>Добавить операцию</h3>
-        <form id="add-form" style="display: grid; grid-template-columns: 1fr 2fr 1fr 1.5fr auto; gap: 10px; margin-top: 15px; align-items: flex-end;">
-            <div><label>Тип</label><select id="in-type"><option value="expense">Расход</option><option value="income">Доход</option></select></div>
-            <div><label>Название</label><input type="text" id="in-name" placeholder="Напр: PRISMA" required></div>
-            <div><label>Сумма €</label><input type="number" id="in-sum" step="0.01" required></div>
-            <div><label>Категория</label><select id="in-cat"></select></div>
-            <button type="submit" class="btn btn-primary" style="height: 45px;">ДОБАВИТЬ</button>
-        </form>
-    </div>
-
-    <div style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-        <input type="text" id="q-search" placeholder="Поиск..." style="width: 200px;">
-        <input type="number" id="q-min" placeholder="От €" style="width: 80px;">
-        <input type="number" id="q-max" placeholder="До €" style="width: 80px;">
-        <select id="q-sort" style="width: 140px;">
-            <option value="d-desc">Дата ↓</option><option value="d-asc">Дата ↑</option>
-            <option value="s-desc">Сумма ↓</option><option value="s-asc">Сумма ↑</option>
-        </select>
-        <div id="cat-filters" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
-        <button class="btn" onclick="openModal('newCatModal')">+ Категория</button>
-    </div>
-
-    <div style="font-size: 11px; color: var(--muted); margin-bottom: 10px; text-transform: uppercase;">
-        Транзакции: <span id="tx-count">0</span>
-    </div>
-    <div id="tx-list"></div>
 </div>
 
 <div id="importModal" class="modal" onclick="closeModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <h3>Импорт данных</h3>
-        <div style="display: flex; border-bottom: 1px solid var(--border); margin: 20px 0;">
-            <div class="pill active" onclick="tab(this, 'json')">JSON</div>
-            <div class="pill" onclick="tab(this, 'csv')">CSV (Swedbank)</div>
+        <h3 style="font-family: var(--font-title); font-size: 14px; margin-bottom: 20px;">Импорт данных</h3>
+        
+        <div class="tab-nav">
+            <span class="tab-link active" onclick="switchTab(this, 'json-tab')">JSON</span>
+            <span class="tab-link" onclick="switchTab(this, 'csv-tab')">Swedbank CSV</span>
         </div>
-        <div id="import-json">
-            <div id="drop-json" style="border: 2px dashed var(--border); padding: 40px; text-align: center; border-radius: 12px; cursor: pointer;">Перетащите JSON или кликните</div>
-            <label style="margin-top: 15px;"><input type="checkbox" id="import-merge"> Добавить к существующим</label>
-        </div>
-        <div id="import-csv" style="display: none;">
-            <p style="font-size: 12px; color: var(--muted); margin-bottom: 10px;">Скачайте выписку в формате CSV из Swedbank и перетащите сюда.</p>
-            <div id="drop-csv" style="border: 2px dashed var(--border); padding: 40px; text-align: center; border-radius: 12px; cursor: pointer;">Перетащите CSV</div>
-        </div>
-        <input type="file" id="file-input" style="display: none;">
-    </div>
-</div>
 
-<div id="newCatModal" class="modal" onclick="closeModal(event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <h3>Новая категория</h3>
-        <label>Название</label><input type="text" id="nc-name" required>
-        <label style="margin-top: 15px;">Иконка</label>
-        <div id="emoji-picker" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-bottom: 10px;"></div>
-        <input type="text" id="nc-emoji" placeholder="Или введите свой эмодзи">
-        <label style="margin-top: 15px;">Цвет</label>
-        <div id="color-picker" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px;"></div>
-        <button class="btn btn-primary" onclick="addCategory()" style="width: 100%; margin-top: 20px;">СОЗДАТЬ</button>
+        <div id="json-tab" class="tab-content">
+            <div class="drop-zone" onclick="document.getElementById('file-json').click()">
+                Нажмите или перетащите JSON файл
+            </div>
+            <input type="file" id="file-json" hidden accept=".json" onchange="processFile(this, 'json')">
+        </div>
+
+        <div id="csv-tab" class="tab-content" style="display: none;">
+            <p style="font-size: 11px; color: var(--muted); margin-bottom: 15px;">Инструкция: в Swedbank выберите «Выписка» -> CSV -> Сохранить.</p>
+            <div class="drop-zone" onclick="document.getElementById('file-csv').click()">
+                Перетащите CSV выписку сюда
+            </div>
+            <input type="file" id="file-csv" hidden accept=".csv" onchange="processFile(this, 'csv')">
+        </div>
+
+        <div style="margin-top: 20px;">
+            <label style="font-size: 12px;">
+                <input type="checkbox" id="merge-data" checked> Добавить к существующим
+            </label>
+        </div>
     </div>
 </div>
 
 <script>
-    const KEY = 'FINANCE_IO_2026';
-    const COLORS = ['#ff6b35', '#00d68f', '#ff4757', '#35baf6', '#7d5fff', '#ffa502', '#ff6b81', '#747d8c', '#1abc9c', '#e67e22', '#8e44ad', '#3498db', '#d35400', '#fd79a8', '#95a5a6', '#f1c40f'];
-    const BUILT_IN_CATS = {
-        'Продукты': { icon: '🛒', color: COLORS[1] }, 'Транспорт': { icon: '⛽', color: COLORS[3] },
-        'Аптека': { icon: '💊', color: COLORS[2] }, 'Рестораны': { icon: '🍕', color: COLORS[5] },
-        'Одежда': { icon: '👗', color: COLORS[6] }, 'Кредиты': { icon: '🏦', color: COLORS[7] },
-        'Страховка': { icon: '🛡️', color: COLORS[8] }, 'Подписки': { icon: '📱', color: COLORS[4] },
-        'Зарплата': { icon: '💰', color: COLORS[1] }, 'Переводы': { icon: '💸', color: COLORS[9] },
-        'Здоровье': { icon: '🏃', color: COLORS[10] }, 'Развлечения': { icon: '🎮', color: COLORS[11] },
-        'Образование': { icon: '📚', color: COLORS[12] }, 'Дом': { icon: '🏠', color: COLORS[13] },
-        'Красота': { icon: '💅', color: COLORS[14] }, 'Прочее': { icon: '📦', color: COLORS[15] }
-    };
+    let state = { transactions: [], categories: {}, nextId: 1 };
+    const DB_KEY = 'FINANCE_IO_2026_DATA';
 
-    const AUTO_MAP = {
-        'Продукты': ['PRISMA', 'LIDL', 'KONSUM', 'SELVER', 'HINNAPOMM', 'MAXIMA', 'RIMI'],
-        'Транспорт': ['GO OIL', 'TANKLA', 'BOLT', 'RATTARINGLUS', 'LEROTRANS', 'CIRCLE K', 'OLEREX'],
-        'Аптека': ['APTEEK'],
-        'Рестораны': ['PIZZA', 'DODO', 'KIIRTOIT', 'SUMUP'],
-        'Одежда': ['SINSAY', 'ZALANDO', 'SUPERALKO'],
-        'Кредиты': ['LAENU', 'ESTO', 'BIGBANK', 'KOGUNENUD'],
-        'Страховка': ['INSURANCE', 'KINDLUSTUS'],
-        'Подписки': ['YOUTUBE', 'GOOGLE', 'PAYPAL', 'NYA', 'NETFLIX', 'SPOTIFY']
-    };
-
-    let state = { transactions: [], categories: {}, selectedMonth: 'all' };
-
-    async function load() {
-        let r = await window.storage.get(KEY);
-        if (r) {
-            state = JSON.parse(r);
-        } else {
-            generateDemo();
-        }
-        const months = getMonths();
-        state.selectedMonth = months[0] || 'all';
-        renderAll();
+    // --- Core Logic ---
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(e) { 
+        if(e === 'force' || e.target.classList.contains('modal')) 
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); 
     }
 
-    async function save() {
-        document.getElementById('save-status').innerText = '... Сохранение';
-        await window.storage.set(KEY, JSON.stringify(state));
-        document.getElementById('save-status').innerText = '✓ Сохранено';
-    }
-
-    function generateDemo() {
-        const txs = [];
-        const m = "2026-03";
-        txs.push({ id: 1, name: "Зарплата", amount: 2800, type: "income", cat: "Зарплата", date: `${m}-05`, pending: false });
-        txs.push({ id: 2, name: "Sotsiaaltoetus", amount: 120, type: "income", cat: "Переводы", date: `${m}-10`, pending: false });
-        
-        const shops = ['PRISMA', 'LIDL', 'BOLT', 'ESTO AS', 'Bigbank', 'NETFLIX', 'KONSUM', 'CIRCLE K'];
-        for(let i=1; i<=45; i++) {
-            const d = Math.floor(Math.random()*15)+1;
-            const shop = shops[Math.floor(Math.random()*shops.length)];
-            const amt = -(Math.random()*60 + 5).toFixed(2);
-            txs.push({
-                id: Date.now()+i,
-                name: shop,
-                amount: parseFloat(amt),
-                type: "expense",
-                cat: autoCat(shop),
-                date: `${m}-${d.toString().padStart(2, '0')}`,
-                pending: i % 10 === 0
-            });
-        }
-        state.transactions = txs;
-    }
-
-    function autoCat(name) {
-        const n = name.toUpperCase();
-        for(let [cat, keys] of Object.entries(AUTO_MAP)) {
-            if(keys.some(k => n.includes(k))) return cat;
-        }
-        return 'Прочее';
-    }
-
-    function getMonths() {
-        return [...new Set(state.transactions.map(t => t.date.substring(0, 7)))].sort().reverse();
-    }
-
-    function renderAll() {
-        renderFilter();
-        renderStats();
-        renderChart();
-        renderPeriod();
-        renderForecast();
-        renderTops();
-        renderTx();
-        updateCatSelects();
-    }
-
-    function renderFilter() {
-        const months = getMonths();
-        const container = document.getElementById('month-filter');
-        container.innerHTML = `<div class="pill ${state.selectedMonth==='all'?'active':''}" onclick="setMonth('all')">Все</div>` +
-            months.map(m => `<div class="pill ${state.selectedMonth===m?'active':''}" onclick="setMonth('${m}')">${m}</div>`).join('');
-    }
-
-    function renderStats() {
-        const txs = filtered();
-        const inc = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount, 0);
-        const exp = txs.filter(t=>t.type==='expense').reduce((s,t)=>s+Math.abs(t.amount), 0);
-        document.getElementById('stat-inc').innerText = inc.toFixed(2) + ' €';
-        document.getElementById('stat-exp').innerText = exp.toFixed(2) + ' €';
-        document.getElementById('stat-bal').innerText = (inc - exp).toFixed(2) + ' €';
-    }
-
-    function renderChart() {
-        const container = document.getElementById('daily-chart');
-        if(state.selectedMonth === 'all') {
-            container.innerHTML = `<div style="color:var(--muted); padding: 50px; text-align:center; width:100%">Выберите месяц для графика</div>`;
-            return;
-        }
-        const txs = filtered();
-        const days = new Date(state.selectedMonth.split('-')[0], state.selectedMonth.split('-')[1], 0).getDate();
-        const daily = {};
-        for(let i=1; i<=days; i++) daily[i] = { inc: 0, exp: 0 };
-        txs.forEach(t => {
-            const d = parseInt(t.date.split('-')[2]);
-            if(t.type === 'income') daily[d].inc += t.amount;
-            else daily[d].exp += Math.abs(t.amount);
-        });
-        const max = Math.max(...Object.values(daily).map(d => Math.max(d.inc, d.exp)), 100);
-        container.innerHTML = Object.entries(daily).map(([d, v]) => `
-            <div class="bar-group">
-                <div class="bar green" style="height: ${(v.inc/max*100)}%"></div>
-                <div class="bar red" style="height: ${(v.exp/max*100)}%"></div>
-                ${days <= 20 ? `<span style="font-size:8px; margin-top:5px">${d}</span>` : ''}
-            </div>
-        `).join('');
-    }
-
-    function renderPeriod() {
-        const wrap = document.getElementById('period-stats');
-        if(state.selectedMonth === 'all') { wrap.style.display = 'none'; return; }
-        wrap.style.display = 'block';
-        const txs = filtered();
-        const exp = txs.filter(t=>t.type==='expense');
-        const totalExp = exp.reduce((s,t)=>s+Math.abs(t.amount), 0);
-        const inc = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount, 0);
-        
-        document.getElementById('p-count').innerText = txs.length;
-        document.getElementById('p-avg').innerText = (totalExp / (exp.length || 1)).toFixed(0) + ' €';
-        document.getElementById('p-save').innerText = inc > 0 ? ((inc - totalExp)/inc*100).toFixed(0) + '%' : '0%';
-        
-        const cats = {};
-        exp.forEach(t => cats[t.cat] = (cats[t.cat] || 0) + Math.abs(t.amount));
-        const top = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
-        document.getElementById('p-top').innerText = top ? top[0] : '-';
-    }
-
-    function renderForecast() {
-        const wrap = document.getElementById('forecast-section');
-        if(state.selectedMonth === 'all') { wrap.style.display = 'none'; return; }
-        wrap.style.display = 'block';
-        const txs = filtered();
-        const exp = txs.filter(t=>t.type==='expense').reduce((s,t)=>s+Math.abs(t.amount), 0);
-        const now = new Date();
-        const isCur = now.toISOString().startsWith(state.selectedMonth);
-        const days = new Date(state.selectedMonth.split('-')[0], state.selectedMonth.split('-')[1], 0).getDate();
-        const curDay = isCur ? now.getDate() : days;
-        const avg = exp / curDay;
-        const proj = avg * days;
-
-        document.getElementById('f-daily').innerText = avg.toFixed(0) + ' €';
-        document.getElementById('f-left').innerText = days - curDay;
-        document.getElementById('f-total').innerText = proj.toFixed(0) + ' €';
-        document.getElementById('f-fact').style.width = (exp / Math.max(proj, exp) * 100) + '%';
-        document.getElementById('f-fore').style.width = (proj / Math.max(proj, exp) * 100) + '%';
-        document.getElementById('f-today').style.left = (curDay / days * 100) + '%';
-        
-        const status = document.getElementById('f-status');
-        if(proj > 1500) { // Limit example
-            status.innerText = `⚠ Перерасход ~${(proj - 1500).toFixed(0)} €`;
-            status.style.color = 'var(--red)';
-        } else {
-            status.innerText = '✓ Прогноз в норме';
-            status.style.color = 'var(--green)';
-        }
-    }
-
-    function renderTops() {
-        const txs = filtered().filter(t=>t.type==='expense');
-        const total = txs.reduce((s,t)=>s+Math.abs(t.amount), 0);
-        const cats = {}, shops = {};
-        txs.forEach(t => {
-            cats[t.cat] = (cats[t.cat] || 0) + Math.abs(t.amount);
-            shops[t.name] = (shops[t.name] || 0) + Math.abs(t.amount);
-        });
-
-        const draw = (data, id, isCat) => {
-            const sorted = Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0, 6);
-            const max = sorted[0]?.[1] || 1;
-            document.getElementById(id).innerHTML = sorted.map(([n, v]) => `
-                <div style="margin-bottom: 12px;">
-                    <div style="display:flex; justify-content:space-between; font-size:11px;">
-                        <span>${n} ${isCat ? `<span style="color:var(--muted)">${(v/total*100).toFixed(1)}%</span>` : ''}</span>
-                        <span>${v.toFixed(0)} €</span>
-                    </div>
-                    <div class="progress-bar"><div class="progress-fill" style="width:${(v/max*100)}%; background:${isCat?(BUILT_IN_CATS[n]?.color||state.categories[n]?.color||'var(--accent)'):'var(--accent)'}"></div></div>
-                </div>
-            `).join('');
-        };
-        draw(cats, 'top-cats', true);
-        draw(shops, 'top-shops', false);
-    }
-
-    function renderTx() {
-        const list = filtered();
-        document.getElementById('tx-count').innerText = list.length;
-        const allCats = {...BUILT_IN_CATS, ...state.categories};
-        document.getElementById('tx-list').innerHTML = list.map(t => `
-            <div class="tx-row">
-                <div style="font-size:20px;">${allCats[t.cat]?.icon || '📦'}</div>
-                <div><div style="font-weight:bold">${t.name} ${t.pending?'⏳':''}</div><div style="font-size:10px; color:var(--muted)">${t.date}</div></div>
-                <div class="tx-cat">
-                    <select onchange="updateTxCat(${t.id}, this.value)" style="padding:2px; font-size:10px;">
-                        ${Object.keys(allCats).map(c => `<option value="${c}" ${c===t.cat?'selected':''}>${c}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="amount" style="text-align:right; color:${t.type==='income'?'var(--green)':'white'}">
-                    ${t.amount.toFixed(2)} €
-                </div>
-                <div class="tx-actions">
-                    <button class="btn" style="padding:4px 8px" onclick="editTx(${t.id})">✏</button>
-                    <button class="btn" style="padding:4px 8px" onclick="deleteTx(${t.id})">✕</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function filtered() {
-        return state.transactions.filter(t => {
-            if(state.selectedMonth !== 'all' && !t.date.startsWith(state.selectedMonth)) return false;
-            return true;
-        }).sort((a,b) => new Date(b.date) - new Date(a.date));
-    }
-
-    function setMonth(m) { state.selectedMonth = m; renderAll(); }
-
-    function updateCatSelects() {
-        const all = {...BUILT_IN_CATS, ...state.categories};
-        document.getElementById('in-cat').innerHTML = Object.keys(all).map(c => `<option value="${c}">${all[c].icon} ${c}</option>`).join('');
-    }
-
-    window.openModal = (id) => document.getElementById(id).classList.add('active');
-    window.closeModal = (e) => {
-        if(e === 'force' || e.target.classList.contains('modal')) {
-            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
-        }
-    };
-
-    function tab(el, id) {
-        document.querySelectorAll('.modal .pill').forEach(p => p.classList.remove('active'));
+    function switchTab(el, tabId) {
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
         el.classList.add('active');
-        document.getElementById('import-json').style.display = id === 'json' ? 'block' : 'none';
-        document.getElementById('import-csv').style.display = id === 'csv' ? 'block' : 'none';
+        document.getElementById(tabId).style.display = 'block';
     }
 
-    document.getElementById('add-form').onsubmit = (e) => {
-        e.preventDefault();
-        const type = document.getElementById('in-type').value;
-        const tx = {
-            id: Date.now(),
-            name: document.getElementById('in-name').value,
-            amount: parseFloat(document.getElementById('in-sum').value) * (type==='expense'?-1:1),
-            type: type,
-            cat: document.getElementById('in-cat').value,
-            date: new Date().toISOString().split('T')[0],
-            pending: false
+    // --- File Processing ---
+    async function processFile(input, type) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const content = e.target.result;
+            const isMerge = document.getElementById('merge-data').checked;
+
+            if (type === 'json') {
+                const data = JSON.parse(content);
+                if (isMerge) {
+                    state.transactions = [...state.transactions, ...(data.transactions || [])];
+                    state.categories = { ...state.categories, ...(data.categories || {}) };
+                } else {
+                    state = data;
+                }
+            } else if (type === 'csv') {
+                const newTxs = parseSwedbankCSV(content);
+                if (isMerge) {
+                    // Пропуск дубликатов по ключу дата|сумма|название
+                    const existingKeys = new Set(state.transactions.map(t => `${t.date}|${t.amount}|${t.name}`));
+                    const filtered = newTxs.filter(t => !existingKeys.has(`${t.date}|${t.amount}|${t.name}`));
+                    state.transactions = [...state.transactions, ...filtered];
+                } else {
+                    state.transactions = newTxs;
+                }
+            }
+
+            await saveToStorage();
+            location.reload(); // Перезагрузка для обновления всех графиков
         };
-        state.transactions.push(tx);
-        save(); renderAll(); e.target.reset();
-    };
+        reader.readAsText(file);
+    }
 
-    window.updateTxCat = (id, cat) => {
-        const tx = state.transactions.find(t=>t.id===id);
-        if(tx) tx.cat = cat;
-        save(); renderAll();
-    };
+    // --- Parser Swedbank CSV ---
+    function parseSwedbankCSV(text) {
+        const lines = text.split('\n');
+        const transactions = [];
+        // Определение разделителя
+        const delimiter = lines[0].includes(';') ? ';' : ',';
 
-    // Color/Emoji pickers and other features...
-    load();
+        for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(delimiter).map(c => c.replace(/"/g, '').trim());
+            if (cols.length < 5) continue;
+
+            const date = cols[2]; // Дата операции
+            const name = cols[3]; // Получатель/Отправитель
+            const amount = parseFloat(cols[5].replace(',', '.')); // Сумма
+            const type = amount > 0 ? 'income' : 'expense';
+
+            if (date && !isNaN(amount)) {
+                transactions.push({
+                    id: Date.now() + i,
+                    date: formatDate(date),
+                    name: name,
+                    amount: amount,
+                    type: type,
+                    cat: 'Прочее', // Автокатегоризация вызывается отдельно при рендере
+                    pending: false
+                });
+            }
+        }
+        return transactions;
+    }
+
+    function formatDate(rawDate) {
+        // Поддержка dd.mm.yyyy и yyyy-mm-dd
+        if (rawDate.includes('.')) {
+            const parts = rawDate.split('.');
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return rawDate;
+    }
+
+    async function saveToStorage() {
+        if (window.storage) {
+            await window.storage.set(DB_KEY, JSON.stringify(state));
+        } else {
+            localStorage.setItem(DB_KEY, JSON.stringify(state));
+        }
+    }
+
+    window.exportData = () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `finance-io-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+    }
 </script>
 </body>
 </html>
