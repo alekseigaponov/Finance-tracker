@@ -83,24 +83,50 @@ header{
   display:flex; align-items:center; justify-content:space-between;
   margin-bottom:32px; flex-wrap:wrap; gap:12px;
 }
-.logo{
+/* ── Logo ── */
+.logo-wrap{
+  display:flex; align-items:center; gap:12px;
+  flex-shrink:0;
+}
+.logo-icon{
+  width:44px; height:38px; flex-shrink:0;
+  overflow:visible;
+}
+/* Icon paths draw-on animation */
+.lp{
+  stroke-dasharray:120;
+  stroke-dashoffset:120;
+}
+.lp1{ animation:lpDraw .9s cubic-bezier(.4,0,.2,1) .1s forwards; }
+.lp2{ animation:lpDraw .8s cubic-bezier(.4,0,.2,1) .5s forwards; }
+@keyframes lpDraw{ to{ stroke-dashoffset:0; } }
+
+/* Text */
+.logo-text{
+  display:flex; align-items:baseline; gap:0;
   font-family:'Syne',sans-serif;
   font-size:22px; font-weight:800;
   letter-spacing:-0.5px;
-  display:flex; align-items:center; gap:2px;
+  white-space:nowrap;
 }
-.logo-dot{ color:var(--accent); }
-.logo-badge{
-  font-family:'DM Mono',monospace;
-  font-size:9px; font-weight:500;
-  color:var(--muted);
-  background:var(--glass2);
-  border:1px solid var(--border);
-  border-radius:6px;
-  padding:3px 8px;
-  margin-left:10px;
-  letter-spacing:1px;
-  vertical-align:middle;
+.lt{
+  display:inline-block;
+  opacity:0;
+  transform:translateY(6px);
+  animation:ltReveal .35s cubic-bezier(.34,1.4,.64,1) forwards;
+  animation-delay:calc(.55s + var(--i) * .055s);
+}
+.logo-dot-char{
+  color:var(--accent);
+  animation:ltReveal .35s cubic-bezier(.34,1.4,.64,1) forwards, dotPulse 2.5s ease-in-out 1.6s infinite;
+  animation-delay:calc(.55s + 7 * .055s), 1.6s;
+}
+@keyframes ltReveal{
+  to{ opacity:1; transform:translateY(0); }
+}
+@keyframes dotPulse{
+  0%,100%{ text-shadow:0 0 0 transparent; color:var(--accent); }
+  50%{ text-shadow:0 0 14px rgba(255,92,26,.7), 0 0 28px rgba(255,92,26,.3); color:#ff8a5c; }
 }
 
 .hbtns{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
@@ -303,6 +329,16 @@ header{
 .legend-item{ display:flex; align-items:center; gap:6px; font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
 .legend-dot{ width:8px; height:8px; border-radius:2px; }
 
+
+/* Import mode buttons */
+.import-mode-btn{
+  flex:1; display:flex; align-items:flex-start; gap:10px;
+  padding:12px 14px; border-radius:12px;
+  border:1px solid var(--border); background:transparent;
+  cursor:pointer; transition:all .18s;
+}
+.import-mode-btn:hover{ border-color:var(--border2); background:var(--glass); }
+.import-mode-btn.active{ border-color:var(--accent); background:rgba(255,92,26,0.08); }
 
 /* Transactions section */
 .tx-card{ grid-column:span 12; padding:24px; }
@@ -544,31 +580,24 @@ header{
 
 <!-- Header -->
 <header>
-  <div class="logo" style="display:flex;align-items:center;gap:10px">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none" class="animated-logo" style="height:38px;width:auto">
-      <style>
-        @keyframes drawLine { to { stroke-dashoffset: 0; } }
-        @keyframes pulseGlow { 0%, 100% { opacity: 0.8; filter: blur(2px); } 50% { opacity: 1; filter: blur(5px); } }
-        .path-draw { stroke-dasharray: 100; stroke-dashoffset: 100; animation: drawLine 2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-        .dot-pulse { animation: pulseGlow 2s ease-in-out infinite; }
-      </style>
+  <div class="logo-wrap">
+    <!-- Icon: two animated paths -->
+    <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 58 50" fill="none">
       <defs>
-        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#ff9f43;stop-opacity:1" />
+        <linearGradient id="lgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ff5c1a"/>
+          <stop offset="100%" stop-color="#ff9f43"/>
         </linearGradient>
-        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="2" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
       </defs>
-      <path class="path-draw" d="M10 45V15H30M10 30H25" stroke="url(#grad)" stroke-width="4" stroke-linecap="round" />
-      <path class="path-draw" d="M35 45L45 25L55 35L65 10" stroke="url(#grad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation-delay: 0.5s;" />
-      <text x="75" y="42" fill="#e0e0e6" style="font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -1px;">
-        FINANCE<tspan class="dot-pulse" fill="#ff6b35" filter="url(#glow)">.</tspan>IO
-      </text>
+      <!-- F-shape -->
+      <path class="lp lp1" d="M6 44V8H28M6 26H22" stroke="url(#lgGrad)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Chart line -->
+      <path class="lp lp2" d="M32 44L40 24L48 34L56 8" stroke="url(#lgGrad)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <span class="logo-badge">BETA</span>
+    <!-- Text: letter-by-letter reveal -->
+    <div class="logo-text" aria-label="FINANCE.IO">
+      <span class="lt" style="--i:0">F</span><span class="lt" style="--i:1">I</span><span class="lt" style="--i:2">N</span><span class="lt" style="--i:3">A</span><span class="lt" style="--i:4">N</span><span class="lt" style="--i:5">C</span><span class="lt" style="--i:6">E</span><span class="lt logo-dot-char" style="--i:7">.</span><span class="lt" style="--i:8">I</span><span class="lt" style="--i:9">O</span>
+    </div>
   </div>
   <div class="hbtns">
     <span id="saveStatus"></span>
@@ -791,23 +820,55 @@ header{
 <!-- ── Import overlay ── -->
 <div class="overlay" id="importOv">
 <div class="modal">
-  <div class="modal-title">↓ <span>Импорт</span></div>
+  <div class="modal-title">Данные <span>/ Импорт</span></div>
   <div class="tab-row">
-    <button class="tab-btn active" id="tabJson" onclick="switchTab('json')">JSON (из приложения)</button>
-    <button class="tab-btn" id="tabCsv" onclick="switchTab('csv')">CSV (Swedbank)</button>
+    <button class="tab-btn active" id="tabJson" onclick="switchTab('json')">JSON</button>
+    <button class="tab-btn" id="tabCsv" onclick="switchTab('csv')">CSV Swedbank</button>
   </div>
+
+  <!-- JSON tab -->
   <div id="tabJsonContent">
-    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">Загрузи файл <b style="color:var(--text)">.json</b> — перенесёт все данные.</p>
-    <div class="drop-zone" id="jsonDrop" onclick="document.getElementById('jsonFile').click()">
-      <span style="font-size:30px">📂</span>
-      <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">Нажми или перетащи .json</span>
-      <input type="file" id="jsonFile" accept=".json" style="display:none" onchange="handleJSON(this.files[0])"/>
+    <!-- Step 1: drop zone -->
+    <div id="jsonStep1">
+      <div class="drop-zone" id="jsonDrop" onclick="document.getElementById('jsonFile').click()">
+        <span style="font-size:28px">📂</span>
+        <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">Нажми или перетащи .json файл</span>
+        <input type="file" id="jsonFile" accept=".json" style="display:none" onchange="previewJSON(this.files[0])"/>
+      </div>
+      <div id="jsonStatus" style="font-family:'DM Mono',monospace;font-size:11px;margin-top:8px;min-height:16px;"></div>
     </div>
-    <div id="jsonStatus" style="font-family:'DM Mono',monospace;font-size:11px;margin-top:8px;min-height:16px;"></div>
-    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--muted);cursor:pointer;">
-      <input type="checkbox" id="jsonMerge" style="accent-color:var(--accent)"/> Добавить к существующим
-    </label>
+    <!-- Step 2: preview before confirm -->
+    <div id="jsonStep2" style="display:none">
+      <div id="jsonPreview" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;"></div>
+      <div style="margin-bottom:14px;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Режим импорта</div>
+        <div style="display:flex;gap:8px;">
+          <label class="import-mode-btn active" id="imMergeBtn" onclick="setImportMode('merge')">
+            <input type="radio" name="importMode" value="merge" checked style="display:none"/>
+            <span style="font-size:14px">🔀</span>
+            <div>
+              <div style="font-size:11px;font-weight:500">Объединить</div>
+              <div style="font-size:10px;color:var(--muted)">Добавит новые, не тронет существующие</div>
+            </div>
+          </label>
+          <label class="import-mode-btn" id="imReplaceBtn" onclick="setImportMode('replace')">
+            <input type="radio" name="importMode" value="replace" style="display:none"/>
+            <span style="font-size:14px">🔄</span>
+            <div>
+              <div style="font-size:11px;font-weight:500">Заменить всё</div>
+              <div style="font-size:10px;color:var(--muted)">Полностью заменит текущие данные</div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="m-cancel" onclick="resetJsonImport()">← Назад</button>
+        <button class="m-save" id="jsonConfirmBtn" onclick="confirmJSON()">ИМПОРТИРОВАТЬ</button>
+      </div>
+    </div>
   </div>
+
+  <!-- CSV tab -->
   <div id="tabCsvContent" style="display:none">
     <ol style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding-left:16px;margin-bottom:14px;line-height:2.2;">
       <li>Swedbank → Счета → Выписка</li>
@@ -815,7 +876,7 @@ header{
       <li>Скачай и загрузи сюда</li>
     </ol>
     <div class="drop-zone" id="csvDrop" onclick="document.getElementById('csvFile').click()">
-      <span style="font-size:30px">📊</span>
+      <span style="font-size:28px">📊</span>
       <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">Нажми или перетащи .csv</span>
       <input type="file" id="csvFile" accept=".csv,.txt" style="display:none" onchange="handleCSV(this.files[0])"/>
     </div>
@@ -824,8 +885,9 @@ header{
       <input type="checkbox" id="csvMerge" style="accent-color:var(--accent)" checked/> Добавить к существующим
     </label>
   </div>
-  <div class="modal-actions" style="margin-top:20px;">
-    <button class="m-cancel" style="width:100%" onclick="closeOv('importOv')">Закрыть</button>
+
+  <div class="modal-actions" style="margin-top:16px;">
+    <button class="m-cancel" style="width:100%" onclick="closeOv('importOv');resetJsonImport()">Закрыть</button>
   </div>
 </div>
 </div>
@@ -1513,38 +1575,161 @@ function deleteCat(cat,e){
 }
 
 // ── Export / Import ───────────────────────────────────────────
+// ── Export ────────────────────────────────────────────────────
 function exportJSON(){
-  const data={transactions,nextId,budgets,CAT_ICONS,CAT_COLORS,exportedAt:new Date().toISOString()};
+  // Export ALL state: transactions, budgets, custom categories (icons+colors)
+  // Only custom cats (non built-in) stored separately for clean import
+  const customCats={};
+  const customColors={};
+  Object.keys(CAT_ICONS).forEach(k=>{
+    if(!BUILT_IN.includes(k)){ customCats[k]=CAT_ICONS[k]; customColors[k]=CAT_COLORS[k]; }
+  });
+  const data={
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    transactions,
+    nextId,
+    budgets,
+    customCategories: Object.keys(customCats).map(name=>({
+      name,
+      icon: customCats[name],
+      color: customColors[name]
+    })),
+    // also include full maps for backwards compat
+    CAT_ICONS,
+    CAT_COLORS
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.href=URL.createObjectURL(blob);
   a.download=`finance-io-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();URL.revokeObjectURL(a.href);
+  a.click(); URL.revokeObjectURL(a.href);
   showStatus('✓ Экспортировано','var(--green)');
 }
+
+// ── Import: tab switch ─────────────────────────────────────────
 function switchTab(tab){
   document.getElementById('tabJsonContent').style.display=tab==='json'?'':'none';
   document.getElementById('tabCsvContent').style.display=tab==='csv'?'':'none';
   document.getElementById('tabJson').classList.toggle('active',tab==='json');
   document.getElementById('tabCsv').classList.toggle('active',tab==='csv');
 }
-function handleJSON(file){
+
+// ── Import: JSON preview flow ──────────────────────────────────
+let _pendingImport=null;
+let _importMode='merge';
+
+function setImportMode(mode){
+  _importMode=mode;
+  document.getElementById('imMergeBtn').classList.toggle('active',mode==='merge');
+  document.getElementById('imReplaceBtn').classList.toggle('active',mode==='replace');
+}
+
+function resetJsonImport(){
+  _pendingImport=null;
+  document.getElementById('jsonStep1').style.display='';
+  document.getElementById('jsonStep2').style.display='none';
+  document.getElementById('jsonStatus').innerHTML='';
+  document.getElementById('jsonFile').value='';
+}
+
+function previewJSON(file){
   if(!file)return;
-  const merge=document.getElementById('jsonMerge').checked;
   const r=new FileReader();
   r.onload=e=>{
     try{
       const p=JSON.parse(e.target.result);
-      if(!p.transactions)throw new Error('Неверный формат');
-      if(merge){const ids=new Set(transactions.map(t=>t.id));transactions=[...transactions,...p.transactions.filter(t=>!ids.has(t.id))];nextId=Math.max(nextId,p.nextId||0,...transactions.map(t=>t.id))+1;}
-      else{transactions=p.transactions;nextId=p.nextId||transactions.length+1;budgets=p.budgets||{};}
-      if(p.CAT_ICONS)CAT_ICONS={...CAT_ICONS,...p.CAT_ICONS};
-      if(p.CAT_COLORS)CAT_COLORS={...CAT_COLORS,...p.CAT_COLORS};
-      refreshSelects();saveData();renderAll();
-      document.getElementById('jsonStatus').innerHTML=`<span style="color:var(--green)">✓ Загружено ${p.transactions.length} транзакций</span>`;
-      setTimeout(()=>closeOv('importOv'),1500);
-    }catch(err){document.getElementById('jsonStatus').innerHTML=`<span style="color:var(--red)">✕ ${err.message}</span>`;}
+
+      // Validate
+      if(!Array.isArray(p.transactions)) throw new Error('Нет поля transactions');
+
+      _pendingImport=p;
+
+      // Count what we have
+      const txCount=p.transactions.length;
+      const incCount=p.transactions.filter(t=>t.amount>0).length;
+      const expCount=p.transactions.filter(t=>t.amount<0).length;
+      const budgetCount=Object.keys(p.budgets||{}).length;
+
+      // Custom categories
+      let customCats=[];
+      if(p.customCategories?.length){
+        customCats=p.customCategories;
+      } else if(p.CAT_ICONS){
+        // backwards compat: derive custom from full map
+        customCats=Object.keys(p.CAT_ICONS)
+          .filter(k=>!BUILT_IN.includes(k))
+          .map(k=>({name:k,icon:p.CAT_ICONS[k],color:p.CAT_COLORS?.[k]||'#636e72'}));
+      }
+
+      const exportDate=p.exportedAt?new Date(p.exportedAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}):'';
+
+      // Build preview
+      const rows=[
+        {icon:'💳',label:'Транзакций',val:`${txCount} <span style="color:var(--muted);font-size:10px">(+${incCount} / −${expCount})</span>`},
+        {icon:'📊',label:'Бюджеты',val:budgetCount||'—'},
+        {icon:'🏷',label:'Доп. категории',val:customCats.length||'—'},
+      ];
+
+      document.getElementById('jsonPreview').innerHTML=`
+        ${exportDate?`<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;">Экспортировано: ${exportDate}</div>`:''}
+        ${rows.map(r=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--muted2)">${r.icon} ${r.label}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:12px">${r.val}</span>
+          </div>`).join('')}
+        ${customCats.length?`<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:5px;">
+          ${customCats.map(cat=>`<span style="font-size:11px;padding:3px 8px;border-radius:6px;background:${cat.color}22;border:1px solid ${cat.color}44;color:${cat.color}">${cat.icon} ${cat.name}</span>`).join('')}
+        </div>`:''}`;
+
+      document.getElementById('jsonStep1').style.display='none';
+      document.getElementById('jsonStep2').style.display='';
+
+    }catch(err){
+      document.getElementById('jsonStatus').innerHTML=`<span style="color:var(--red)">✕ ${err.message}</span>`;
+    }
   };
   r.readAsText(file);
+}
+
+function confirmJSON(){
+  if(!_pendingImport)return;
+  const p=_pendingImport;
+  const mode=_importMode;
+
+  if(mode==='replace'){
+    // Full replace of everything
+    transactions=p.transactions;
+    nextId=p.nextId||transactions.length+1;
+    budgets=p.budgets||{};
+    // Reset cats to built-in then apply saved
+    CAT_ICONS={Продукты:'🛒',Транспорт:'⛽',Аптека:'💊',Рестораны:'🍕',Одежда:'👗',Кредиты:'🏦',Страховка:'🛡️',Подписки:'📱',Зарплата:'💰',Переводы:'💸',Здоровье:'🏃',Развлечения:'🎮',Образование:'📚',Дом:'🏠',Красота:'💅',Прочее:'📦'};
+    CAT_COLORS={Продукты:'#ff9f43',Транспорт:'#54a0ff',Аптека:'#ff6b81',Рестораны:'#feca57',Одежда:'#a29bfe',Кредиты:'#fd79a8',Страховка:'#00cec9',Подписки:'#6c5ce7',Зарплата:'#22d98a',Переводы:'#fdcb6e',Здоровье:'#26de81',Развлечения:'#fc5c65',Образование:'#45aaf2',Дом:'#f7b731',Красота:'#e056fd',Прочее:'#636e72'};
+    if(p.CAT_ICONS) Object.assign(CAT_ICONS,p.CAT_ICONS);
+    if(p.CAT_COLORS) Object.assign(CAT_COLORS,p.CAT_COLORS);
+    if(p.customCategories){
+      p.customCategories.forEach(cat=>{ CAT_ICONS[cat.name]=cat.icon; CAT_COLORS[cat.name]=cat.color; });
+    }
+  } else {
+    // Merge: add only new transactions (by id)
+    const ids=new Set(transactions.map(t=>t.id));
+    const newTx=p.transactions.filter(t=>!ids.has(t.id));
+    transactions=[...transactions,...newTx];
+    nextId=Math.max(nextId,p.nextId||0,...transactions.map(t=>t.id))+1;
+    // Merge budgets (imported wins on conflict)
+    if(p.budgets) Object.assign(budgets,p.budgets);
+    // Merge custom categories
+    if(p.CAT_ICONS) Object.assign(CAT_ICONS,p.CAT_ICONS);
+    if(p.CAT_COLORS) Object.assign(CAT_COLORS,p.CAT_COLORS);
+    if(p.customCategories){
+      p.customCategories.forEach(cat=>{ CAT_ICONS[cat.name]=cat.icon; CAT_COLORS[cat.name]=cat.color; });
+    }
+  }
+
+  refreshSelects(); saveData(); renderAll();
+  resetJsonImport();
+  closeOv('importOv');
+  showStatus(`✓ Импортировано ${p.transactions.length} транзакций`,'var(--green)');
 }
 function handleCSV(file){
   if(!file)return;
@@ -1599,7 +1784,7 @@ function handleCSV(file){
   el.addEventListener('drop',e=>{
     e.preventDefault();el.style.borderColor='';
     const f=e.dataTransfer.files[0];if(!f)return;
-    if(id==='jsonDrop')handleJSON(f);else handleCSV(f);
+    if(id==='jsonDrop')previewJSON(f);else handleCSV(f);
   });
 });
 
