@@ -839,23 +839,26 @@ const DEMO=[
 // ── Storage ───────────────────────────────────────────────────
 function saveData(){
   try{
-    localStorage.setItem(KEY,JSON.stringify({transactions,nextId,budgets,CAT_ICONS,CAT_COLORS}));
+    const data={transactions,nextId,budgets,CAT_ICONS,CAT_COLORS};
+    localStorage.setItem(KEY,JSON.stringify(data));
     showStatus('✓ Сохранено','var(--muted)');
-  }catch(e){}
+  }catch(e){ console.error('saveData error:',e); }
 }
 function loadData(){
   try{
-    const raw=localStorage.getItem(KEY); const r={value:raw};
-    if(raw){
-      const p=JSON.parse(raw);
-      if(p.transactions?.length){transactions=p.transactions;nextId=p.nextId||transactions.length+1;}
-      if(p.budgets) budgets=p.budgets;
-      if(p.CAT_ICONS) CAT_ICONS={...CAT_ICONS,...p.CAT_ICONS};
-      if(p.CAT_COLORS) CAT_COLORS={...CAT_COLORS,...p.CAT_COLORS};
-      return true;
+    const raw=localStorage.getItem(KEY);
+    if(!raw) return false;
+    const p=JSON.parse(raw);
+    if(!p||typeof p!=='object') return false;
+    if(Array.isArray(p.transactions)&&p.transactions.length>0){
+      transactions=p.transactions;
+      nextId=p.nextId||transactions.length+1;
     }
-  }catch(e){}
-  return false;
+    if(p.budgets&&typeof p.budgets==='object') budgets=p.budgets;
+    if(p.CAT_ICONS&&typeof p.CAT_ICONS==='object') CAT_ICONS={...CAT_ICONS,...p.CAT_ICONS};
+    if(p.CAT_COLORS&&typeof p.CAT_COLORS==='object') CAT_COLORS={...CAT_COLORS,...p.CAT_COLORS};
+    return Array.isArray(p.transactions)&&p.transactions.length>0;
+  }catch(e){ console.error('loadData error:',e); return false; }
 }
 function showStatus(msg,color){
   const s=document.getElementById('saveStatus');
@@ -1332,7 +1335,7 @@ function renderAll(){
 document.getElementById('txDate').value=new Date().toISOString().split('T')[0];
 document.getElementById('moTxDate').value=new Date().toISOString().split('T')[0];
 
-(async()=>{
+{
   const loaded=loadData();
   if(!loaded){transactions=[...DEMO];nextId=DEMO.length+1;}
   showStatus(loaded?'✓ Данные загружены':'📋 Демо-данные',loaded?'var(--green)':'var(--muted)');
@@ -1340,7 +1343,7 @@ document.getElementById('moTxDate').value=new Date().toISOString().split('T')[0]
   const months=[...new Set(transactions.map(t=>t.date.slice(0,7)))].sort().reverse();
   if(months.length)selectedMonth=months[0];
   renderAll();
-})();
+}
 </script>
 </body>
 </html>
