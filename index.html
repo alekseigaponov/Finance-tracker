@@ -302,10 +302,7 @@ header{
 .chart-legend{ display:flex; gap:16px; margin-top:12px; flex-wrap:wrap; }
 .legend-item{ display:flex; align-items:center; gap:6px; font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
 .legend-dot{ width:8px; height:8px; border-radius:2px; }
-.chart-summary{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
-.cs-tile{ background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:10px 14px; }
-.cs-label{ font-family:'DM Mono',monospace; font-size:8px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
-.cs-val{ font-family:'Syne',sans-serif; font-size:16px; font-weight:800; }
+
 
 /* Transactions section */
 .tx-card{ grid-column:span 12; padding:24px; }
@@ -393,8 +390,7 @@ header{
 .ico-btn.d:hover{ border-color:var(--red); color:var(--red); background:rgba(255,59,92,0.08); }
 .empty-state{ text-align:center; padding:40px; color:var(--muted); font-size:13px; }
 
-/* Add form section */
-.add-section{ grid-column:span 12; padding:24px; }
+/* Type toggle (used in modal only) */
 .type-toggle{ display:flex; gap:6px; margin-bottom:16px; }
 .type-btn{
   flex:1; font-family:'DM Mono',monospace; font-size:11px;
@@ -404,16 +400,19 @@ header{
 }
 .type-btn.exp.active{ border-color:var(--red); color:var(--red); background:rgba(255,59,92,0.08); }
 .type-btn.inc.active{ border-color:var(--green); color:var(--green); background:rgba(34,217,138,0.08); }
-.form-grid{ display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:10px; align-items:end; }
-.add-btn{
-  font-family:'Syne',sans-serif; font-size:12px; font-weight:700;
-  padding:10px 20px; border-radius:10px;
-  border:none; background:var(--accent); color:#fff;
-  cursor:pointer; transition:all .2s;
-  box-shadow:0 4px 16px rgba(255,92,26,0.3);
-  white-space:nowrap;
+
+/* FAB */
+.fab{
+  position:fixed; bottom:24px; right:24px; z-index:200;
+  width:56px; height:56px; border-radius:50%;
+  background:var(--accent); color:#fff;
+  font-size:28px; line-height:1; border:none;
+  cursor:pointer; box-shadow:0 6px 28px rgba(255,92,26,0.5);
+  transition:transform .2s, box-shadow .2s;
+  display:flex; align-items:center; justify-content:center;
 }
-.add-btn:hover{ background:#ff6b35; box-shadow:0 4px 24px rgba(255,92,26,0.5); }
+.fab:hover{ transform:scale(1.08); box-shadow:0 8px 36px rgba(255,92,26,0.65); }
+.fab:active{ transform:scale(0.95); }
 
 /* ── Overlays ── */
 .overlay{
@@ -575,7 +574,7 @@ header{
     <span id="saveStatus"></span>
     <button class="btn" onclick="exportJSON()">↑ JSON</button>
     <button class="btn" onclick="openOv('importOv')">↓ Импорт</button>
-    <button class="btn btn-accent" onclick="openOv('addOv')">+ Операция</button>
+    <button class="btn btn-accent" onclick="openAddOv()">+ Операция</button>
   </div>
 </header>
 
@@ -621,17 +620,22 @@ header{
     <div id="budgetList"></div>
   </div>
 
-  <!-- Period stats -->
-  <div class="g period-card">
-    <div class="card-title">Статистика периода</div>
-    <div class="period-grid" id="periodGrid"></div>
-    <div id="periodCompare"></div>
-  </div>
-
-  <!-- Forecast -->
-  <div class="g forecast-card" id="forecastCard" style="display:none">
-    <div class="card-title">Прогноз на конец месяца</div>
-    <div id="forecastBody"></div>
+  <!-- Period stats + Forecast merged -->
+  <div class="g period-card" id="insightCard">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div class="card-title" style="margin-bottom:0">Аналитика</div>
+      <div style="display:flex;gap:6px;" id="insightTabs">
+        <button class="chart-mode-btn active" id="itabStats" onclick="setInsightTab('stats')">Статистика</button>
+        <button class="chart-mode-btn" id="itabForecast" onclick="setInsightTab('forecast')">Прогноз</button>
+      </div>
+    </div>
+    <div id="insightStats">
+      <div class="period-grid" id="periodGrid"></div>
+      <div id="periodCompare"></div>
+    </div>
+    <div id="insightForecast" style="display:none">
+      <div id="forecastBody"></div>
+    </div>
   </div>
 
   <!-- Chart -->
@@ -644,7 +648,6 @@ header{
         <button class="chart-mode-btn" id="cmExp" onclick="setChartMode('exp')">Расходы</button>
       </div>
     </div>
-    <div class="chart-summary" id="chartSummary"></div>
     <div class="chart-wrap">
       <svg class="chart-svg" id="chartSvg" height="160"></svg>
       <div class="chart-tooltip" id="chartTooltip"></div>
@@ -652,21 +655,6 @@ header{
     <div class="chart-legend" id="chartLegend"></div>
   </div>
 
-  <!-- Add section -->
-  <div class="g add-section">
-    <div class="card-title">Новая операция</div>
-    <div class="type-toggle">
-      <button class="type-btn exp active" id="btnExp" onclick="setType('expense')">− Расход</button>
-      <button class="type-btn inc" id="btnInc" onclick="setType('income')">+ Доход</button>
-    </div>
-    <div class="form-grid">
-      <div><label class="m-label">Название</label><input class="inp" id="txName" style="width:100%" placeholder="Prisma..."/></div>
-      <div><label class="m-label">Сумма €</label><input class="inp" id="txAmt" type="number" step="0.01" min="0" style="width:100%"/></div>
-      <div><label class="m-label">Категория</label><select class="inp" id="txCat" style="width:100%"></select></div>
-      <div><label class="m-label">Дата</label><input class="inp" id="txDate" type="date" style="width:100%"/></div>
-      <button class="add-btn" onclick="addTx()">ДОБАВИТЬ</button>
-    </div>
-  </div>
 
   <!-- Transactions -->
   <div class="g tx-card">
@@ -692,6 +680,9 @@ header{
   </div>
 </div><!-- /bento -->
 
+
+<!-- FAB mobile -->
+<button class="fab" onclick="openAddOv()" aria-label="Добавить операцию">+</button>
 </div><!-- /page -->
 
 <!-- ── Add overlay ── -->
@@ -853,7 +844,7 @@ const KEY = 'finance-io-v3';
 let transactions=[], budgets={}, nextId=1;
 let selectedMonth=null, currentFilter='all', currentSort='date-desc';
 let editingId=null, deletingId=null, selNewColor=PALETTE[0];
-let currentType='expense', addModalType='expense';
+let addModalType='expense';
 
 // ── Demo data ─────────────────────────────────────────────────
 function guessCategory(n){
@@ -946,7 +937,7 @@ function getAllCats(){ return Object.keys(CAT_ICONS); }
 
 function refreshSelects(){
   const opts=getAllCats().map(c=>`<option value="${c}">${CAT_ICONS[c]} ${c}</option>`).join('');
-  ['txCat','moTxCat','editCat','budgetCat'].forEach(id=>{
+  ['moTxCat','editCat','budgetCat'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     const prev=el.value;
     el.innerHTML=id==='budgetCat'?'<option value="">— Категория —</option>'+opts:opts;
@@ -1115,9 +1106,13 @@ function renderPeriodStats(){
 
 // ── Render: Forecast ──────────────────────────────────────────
 function renderForecast(){
-  const fc=document.getElementById('forecastCard');
-  if(!selectedMonth){fc.style.display='none';return;}
-  fc.style.display='';
+  // Forecast tab only shows when month selected — update tab visibility
+  const itabs=document.getElementById('insightTabs');
+  if(itabs) itabs.style.display=selectedMonth?'':'none';
+  if(!selectedMonth){
+    document.getElementById('forecastBody').innerHTML='<div style="font-size:12px;color:var(--muted);padding:12px 0">Выбери конкретный месяц для прогноза</div>';
+    return;
+  }
   const[y,m]=selectedMonth.split('-').map(Number);
   const today=new Date(),isCurrent=today.getFullYear()===y&&today.getMonth()+1===m;
   const daysInMonth=new Date(y,m,0).getDate();
@@ -1180,10 +1175,7 @@ function renderChart(){
   const avgExp=keys.length?totalExp/keys.length:0;
   const bestDay=keys.reduce((best,d)=>days[d].inc-days[d].exp>days[best]?.inc-days[best]?.exp?d:best, keys[0]);
 
-  document.getElementById('chartSummary').innerHTML=`
-    <div class="cs-tile"><div class="cs-label">Итого доходы</div><div class="cs-val" style="color:var(--green)">+${totalInc.toFixed(0)} €</div></div>
-    <div class="cs-tile"><div class="cs-label">Итого расходы</div><div class="cs-val" style="color:var(--red)">−${totalExp.toFixed(0)} €</div></div>
-    <div class="cs-tile"><div class="cs-label">Расходы / день</div><div class="cs-val" style="color:var(--accent)">${avgExp.toFixed(0)} €</div></div>`;
+
 
   const svg=document.getElementById('chartSvg');
   const tooltip=document.getElementById('chartTooltip');
@@ -1418,25 +1410,13 @@ function renderTx(){
   }).join('');
 }
 
-// ── Add transaction (inline form) ─────────────────────────────
-function setType(t){
-  currentType=t;
-  document.getElementById('btnExp').classList.toggle('active',t==='expense');
-  document.getElementById('btnInc').classList.toggle('active',t==='income');
+// ── Add transaction ───────────────────────────────────────────
+function openAddOv(){
+  addModalType='expense';
+  document.getElementById('addBtnExp').classList.add('active');
+  document.getElementById('addBtnInc').classList.remove('active');
+  openOv('addOv');
 }
-function addTx(){
-  const name=document.getElementById('txName').value.trim();
-  const amt=parseFloat(document.getElementById('txAmt').value);
-  const cat=document.getElementById('txCat').value;
-  const date=document.getElementById('txDate').value;
-  if(!name||isNaN(amt)||amt<=0||!date) return;
-  transactions.unshift({id:nextId++,name,amount:currentType==='expense'?-amt:amt,date,cat,pending:false});
-  document.getElementById('txName').value='';
-  document.getElementById('txAmt').value='';
-  saveData();renderAll();
-}
-
-// ── Add transaction (modal) ───────────────────────────────────
 function setAddType(t){
   addModalType=t;
   document.getElementById('addBtnExp').classList.toggle('active',t==='expense');
@@ -1452,6 +1432,16 @@ function addTxModal(){
   document.getElementById('moTxName').value='';
   document.getElementById('moTxAmt').value='';
   closeOv('addOv');saveData();renderAll();
+}
+
+// ── Insight tabs (stats / forecast) ───────────────────────────
+let insightTab='stats';
+function setInsightTab(tab){
+  insightTab=tab;
+  document.getElementById('insightStats').style.display=tab==='stats'?'':'none';
+  document.getElementById('insightForecast').style.display=tab==='forecast'?'':'none';
+  document.getElementById('itabStats').classList.toggle('active',tab==='stats');
+  document.getElementById('itabForecast').classList.toggle('active',tab==='forecast');
 }
 
 // ── Edit ──────────────────────────────────────────────────────
@@ -1620,7 +1610,6 @@ function renderAll(){
 }
 
 // ── Init ──────────────────────────────────────────────────────
-document.getElementById('txDate').value=new Date().toISOString().split('T')[0];
 document.getElementById('moTxDate').value=new Date().toISOString().split('T')[0];
 
 {
