@@ -912,56 +912,18 @@ let addModalType='expense';
 function guessCategory(n){
   n=n.toUpperCase();
   if(/PRISMA|LIDL|KONSUM|SELVER|HINNAPOMM/.test(n)) return 'Продукты';
-  if(/GO OIL|TANKLA|BOLT|RATTARINGLUS|LEROTRANS/.test(n)) return 'Транспорт';
+  if(/GO OIL|TANKLA|BOLT|RATTARINGLUS/.test(n)) return 'Транспорт';
   if(/APTEEK|APTEK/.test(n)) return 'Аптека';
   if(/PIZZA|DODO|KIIRTOIT|SUMUP/.test(n)) return 'Рестораны';
   if(/SINSAY|ZALANDO|SUPERALKO/.test(n)) return 'Одежда';
   if(/LAENU|ESTO|BIGBANK|KOGUNENUD/.test(n)) return 'Кредиты';
   if(/INSURANCE|KINDLUSTUS/.test(n)) return 'Страховка';
   if(/YOUTUBE|GOOGLE|PAYPAL|NYA/.test(n)) return 'Подписки';
-  if(/SOTSIAALKINDLUSTUS|INHUS|GAPONOVA|OLEKSANDR|VELILLO|A2KAI/.test(n)) return 'Зарплата';
-  if(/SERGEI|RENATE/.test(n)) return 'Переводы';
+  if(/SOTSIAALKINDLUSTUS|PALGA|SALARY|WAGES/.test(n)) return 'Зарплата';
+  if(/TRANSFER|MAKSE|ÜLEKANNE/.test(n)) return 'Переводы';
   return 'Прочее';
 }
-const DEMO=[
-  {id:1,name:'Veerenni Apteek OÜ',amount:-45.20,date:'2026-03-03',pending:false},
-  {id:2,name:'SWEDBANK P&C INSURANCE AS',amount:-10.55,date:'2026-03-03',pending:false},
-  {id:3,name:'SERGEI FOMINÕHH',amount:-10.00,date:'2026-03-02',pending:false},
-  {id:4,name:'HINNAPOMM',amount:-4.30,date:'2026-03-02',pending:false},
-  {id:5,name:'SINSAY Tartu',amount:-4.49,date:'2026-03-02',pending:false},
-  {id:6,name:'PRISMA TARTU ANNELINN',amount:-16.41,date:'2026-03-02',pending:false},
-  {id:7,name:'GO OIL TANKLA Tartumaa',amount:-60.94,date:'2026-03-01',pending:false},
-  {id:8,name:'GAPONOVA RENATE',amount:31.50,date:'2026-03-01',pending:false},
-  {id:9,name:'A2KAI OÜ',amount:-62.58,date:'2026-03-01',pending:false},
-  {id:10,name:'NYA*Algo Grupp Tartu',amount:-1.00,date:'2026-03-06',pending:false},
-  {id:11,name:'NYA*Algo Grupp Tartu',amount:-1.00,date:'2026-03-06',pending:false},
-  {id:12,name:'MOISAVAHE KONSUM Tartumaa',amount:-29.39,date:'2026-03-06',pending:false},
-  {id:13,name:'SOTSIAALKINDLUSTUSAMET',amount:187.23,date:'2026-03-06',pending:false},
-  {id:14,name:'HINNAPOMM',amount:-11.91,date:'2026-03-05',pending:false},
-  {id:15,name:'dodopizza.ee Tallinn',amount:-15.90,date:'2026-03-05',pending:false},
-  {id:16,name:'LIDL Tartu Kalda tee',amount:-9.78,date:'2026-03-03',pending:false},
-  {id:17,name:'MOISAVAHE KONSUM Tartumaa',amount:-7.39,date:'2026-03-08',pending:false},
-  {id:18,name:'HINNAPOMM',amount:-16.08,date:'2026-03-07',pending:false},
-  {id:19,name:'PRISMA TARTU ANNELINN',amount:-19.96,date:'2026-03-07',pending:false},
-  {id:20,name:'SUPERALKO Tartu',amount:-11.53,date:'2026-03-07',pending:false},
-  {id:21,name:'SIRIUS KIIRTOIT Tartu',amount:-10.20,date:'2026-03-06',pending:false},
-  {id:22,name:'PRISMA TARTU ANNELINN',amount:-29.20,date:'2026-03-09',pending:false},
-  {id:23,name:'BOLT.EU Tallinn',amount:-34.89,date:'2026-03-09',pending:false},
-  {id:24,name:'INHUS PREFAB OÜ',amount:1472.07,date:'2026-03-09',pending:false},
-  {id:25,name:'OLEKSANDR RAKOVSKYI',amount:540.00,date:'2026-03-09',pending:false},
-  {id:26,name:'GOOGLE*YOUTUBE DUBLIN',amount:-12.49,date:'2026-03-08',pending:true},
-  {id:27,name:'Kogunenud intress 22-VL',amount:-40.04,date:'2026-03-10',pending:false},
-  {id:28,name:'Laenu põhiosa 23-VL',amount:-102.44,date:'2026-03-10',pending:false},
-  {id:29,name:'GAPONOVA RENATE',amount:-300.00,date:'2026-03-10',pending:false},
-  {id:30,name:'ELISA EESTI AS',amount:-28.98,date:'2026-03-10',pending:false},
-  {id:31,name:'PAYPAL *ZALANDOSE',amount:-81.99,date:'2026-03-09',pending:false},
-  {id:32,name:'LEROTRANS OY TARTU EE',amount:-88.31,date:'2026-03-10',pending:true},
-  {id:33,name:'LIDL Tartu Kalda tee',amount:-34.41,date:'2026-03-10',pending:false},
-  {id:34,name:'ESTO AS',amount:-150.70,date:'2026-03-10',pending:false},
-  {id:35,name:'TELIA EESTI AS',amount:-56.92,date:'2026-03-10',pending:false},
-  {id:36,name:'Bigbank AS',amount:-150.00,date:'2026-03-10',pending:false},
-  {id:37,name:'Laenu põhiosa 22-VL',amount:-345.28,date:'2026-03-10',pending:false},
-].map(t=>({...t,cat:guessCategory(t.name)}));
+// No demo data — app starts empty
 
 // ── Storage ───────────────────────────────────────────────────
 function saveData(){
@@ -1788,6 +1750,27 @@ function handleCSV(file){
   });
 });
 
+// ── Onboarding ────────────────────────────────────────────────
+function showOnboarding(){
+  // Show a friendly empty state in the tx list area
+  document.getElementById('txList').innerHTML=`
+    <div style="text-align:center;padding:48px 24px 32px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+      <div style="font-size:48px;line-height:1">📊</div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;">Добро пожаловать</div>
+      <div style="font-size:13px;color:var(--muted);max-width:300px;line-height:1.7;">
+        Данных пока нет. Добавь первую операцию вручную или импортируй выписку из Swedbank.
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
+        <button class="btn btn-accent" onclick="openAddOv()" style="font-size:12px;padding:10px 20px;">
+          + Добавить операцию
+        </button>
+        <button class="btn" onclick="openOv('importOv')" style="font-size:12px;padding:10px 20px;">
+          ↓ Импортировать CSV
+        </button>
+      </div>
+    </div>`;
+}
+
 // ── renderAll ─────────────────────────────────────────────────
 function renderAll(){
   renderMonths();renderStats();renderDonut();renderBudgets();
@@ -1799,12 +1782,14 @@ document.getElementById('moTxDate').value=new Date().toISOString().split('T')[0]
 
 {
   const loaded=loadData();
-  if(!loaded){transactions=[...DEMO];nextId=DEMO.length+1;}
-  showStatus(loaded?'✓ Данные загружены':'📋 Демо-данные',loaded?'var(--green)':'var(--muted)');
+  if(loaded){
+    showStatus('✓ Данные загружены','var(--green)');
+  }
   refreshSelects();
   const months=[...new Set(transactions.map(t=>t.date.slice(0,7)))].sort().reverse();
-  if(months.length)selectedMonth=months[0];
+  if(months.length) selectedMonth=months[0];
   renderAll();
+  if(!loaded) showOnboarding();
 }
 </script>
 </body>
